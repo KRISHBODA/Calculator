@@ -1,0 +1,78 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Real Estate Calculator"
+  description="Calculate Net Operating Income (NOI) and Capitalization Rate (Cap Rate) for investment property valuation."
+  category="Mortgage & Real Estate"
+  categoryHref="/#mortgage-real-estate"
+  resultLabel="Capitalization Rate (Cap Rate)"
+  resultSuffix="%"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Property Value ($)</label><input type="number" id="property-value" value="500000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Gross Annual Rental Income ($)</label><input type="number" id="gross-rent" value="48000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Annual Operating Expenses ($)</label><input type="number" id="operating-expenses" value="13000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Net Operating Income (NOI):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Total Operating Expenses:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>NOI = Gross Rental Income − Operating Expenses. Cap Rate = (NOI / Property Value) × 100.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$500,000 property generating $48,000 rent with $13,000 operating expenses yields $35,000 NOI (7.0% Cap Rate).</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const value = parseFloat(document.getElementById('property-value').value || '500000');
+      const grossRent = parseFloat(document.getElementById('gross-rent').value || '48000');
+      const expenses = parseFloat(document.getElementById('operating-expenses').value || '13000');
+
+      const noi = grossRent - expenses;
+      const capRate = value > 0 ? (noi / value) * 100 : 0;
+
+      document.getElementById('hero-result-value').textContent = formatPercent(capRate, 2);
+      document.getElementById('res-p1').textContent = formatCurrency(noi) + '/yr';
+      document.getElementById('res-p2').textContent = formatCurrency(expenses) + '/yr';
+
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Operating Income (NOI)', 'Operating Expenses'], [Math.max(0, noi), expenses]);
+      }
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

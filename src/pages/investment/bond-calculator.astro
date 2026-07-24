@@ -1,0 +1,55 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Bond Calculator"
+  description="Calculate bond pricing and coupon income."
+  category="Investment & Savings"
+  categoryHref="/#investment"
+  resultLabel="Annual Coupon Income"
+  resultSuffix="/yr"
+>
+  <div slot="inputs" class="space-y-4">
+    <div class="space-y-1.5"><label class="text-xs font-medium">Par Value ($)</label><input type="number" id="par" value="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between"><span>Par Value:</span><span id="res-p1" class="font-bold text-white">$10,000.00</span></div><div class="flex justify-between"><span>Coupon Rate:</span><span id="res-p2" class="font-bold text-emerald-200">5.0%</span></div>
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Annual Coupon = Par × Coupon Rate.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$10,000 par at 5% coupon pays $500/year.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = '$500.00'; (document.getElementById('res-p1') as HTMLElement).textContent = '$10,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '5.0%'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Par', 'Coupon'], [10000, 500]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

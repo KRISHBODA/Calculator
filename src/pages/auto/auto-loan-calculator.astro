@@ -1,0 +1,256 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+import ScheduleTable from '../../components/ScheduleTable.astro';
+---
+
+<CalculatorShell
+  title="Auto Loan Calculator"
+  description="Calculate monthly auto loan payments with trade-in allowance, sales tax, registration fees, and full payoff amortization schedule."
+  category="Auto Loans & Leases"
+  categoryHref="/#auto"
+  resultLabel="Monthly Auto Loan Payment"
+  resultSuffix="/mo"
+>
+  <!-- Input Controls (10 Options) -->
+  <div slot="inputs" class="space-y-4">
+    <!-- 1. Vehicle Price -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="auto-price-num" class="text-[var(--ink)]">1. Vehicle Sticker Price</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="auto-price-num" value="35000" min="1000" max="200000" step="500" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="auto-price-slider" value="35000" min="5000" max="100000" step="500" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- 2. Down Payment -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="auto-down-num" class="text-[var(--ink)]">2. Cash Down Payment ($ / %)</label>
+        <div class="flex items-center space-x-2 font-mono text-[var(--ink-soft)]">
+          <span>$<input type="number" id="auto-down-num" value="5000" min="0" max="100000" step="250" class="w-20 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 & 4. Trade-in Allowance & Amount Owed -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="trade-in-val" class="block text-[var(--ink-soft)] mb-1">3. Trade-in Value ($)</label>
+        <input type="number" id="trade-in-val" value="3000" min="0" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="trade-in-owed" class="block text-[var(--ink-soft)] mb-1">4. Owed on Trade ($)</label>
+        <input type="number" id="trade-in-owed" value="0" min="0" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 5 & 6. Sales Tax & Fees -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="sales-tax-pct" class="block text-[var(--ink-soft)] mb-1">5. Sales Tax (%)</label>
+        <input type="number" id="sales-tax-pct" value="7.0" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="title-fees-num" class="block text-[var(--ink-soft)] mb-1">6. Title & Reg Fees ($)</label>
+        <input type="number" id="title-fees-num" value="450" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 7. Interest Rate -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="auto-rate-num" class="text-[var(--ink)]">7. Interest Rate (%)</label>
+        <span class="font-mono text-[var(--ink-soft)]"><input type="number" id="auto-rate-num" value="5.5" min="0.1" max="25.0" step="0.1" class="w-16 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /> %</span>
+      </div>
+    </div>
+
+    <!-- 8. Loan Term -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="auto-term-select" class="text-[var(--ink)]">8. Loan Term</label>
+        <select id="auto-term-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
+          <option value="36">36 Months (3 yrs)</option>
+          <option value="48">48 Months (4 yrs)</option>
+          <option value="60" selected>60 Months (5 yrs)</option>
+          <option value="72">72 Months (6 yrs)</option>
+          <option value="84">84 Months (7 yrs)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 9. Start Date -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label class="block text-xs font-medium text-[var(--ink)] mb-1">9. Loan Start Date</label>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <select id="auto-start-month" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
+          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+          <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8" selected>Aug</option><option value="9">Sep</option>
+          <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+        </select>
+        <input type="number" id="auto-start-year" value="2026" min="2020" max="2050" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 10. Taxes & Fees Inclusion Toggle -->
+    <div class="flex items-center justify-between text-xs pt-1">
+      <label for="include-taxes-toggle" class="text-[var(--ink)] font-medium">10. Include Taxes & Fees in Loan</label>
+      <input type="checkbox" id="include-taxes-toggle" checked class="w-4 h-4 accent-[var(--green)] cursor-pointer" />
+    </div>
+  </div>
+
+  <!-- Result Breakdown -->
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between items-center">
+      <span class="text-emerald-200/80">Financed Loan Principal:</span>
+      <span id="auto-breakdown-financed" class="font-bold text-white">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Total Sales Tax:</span>
+      <span id="auto-breakdown-tax">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Net Trade-in Credit:</span>
+      <span id="auto-breakdown-trade">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center pt-2 border-t border-emerald-800/60 font-bold text-emerald-100">
+      <span>Total Auto Loan Interest:</span>
+      <span id="auto-breakdown-interest">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1">
+      <span>Total Out-of-Pocket Cost:</span>
+      <span id="auto-breakdown-total-cost" class="font-bold">$0.00</span>
+    </div>
+  </div>
+
+  <!-- Interactive Chart -->
+  <div slot="chart">
+    <ResultChart id="auto-chart" type="donut" title="Auto Payment Breakdown" />
+  </div>
+
+  <!-- Schedule Table -->
+  <div slot="table">
+    <ScheduleTable id="auto-schedule" title="Auto Loan Amortization Schedule" />
+  </div>
+
+  <!-- Formula Explanation -->
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Auto loan payments are computed using standard amortization based on net financed balance:</p>
+    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+      Financed Amount = Price - Down Payment - Trade Equity + Sales Tax + Fees
+    </div>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p class="font-semibold text-[var(--ink)]">Test Case:</p>
+    <p>$35,000 car with $5,000 down and $3,000 trade-in at 5.5% over 60 months = ~$539.42/month.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+
+  function updateAutoCalculator() {
+    const price = parseFloat((document.getElementById('auto-price-num') as HTMLInputElement)?.value || '35000');
+    const down = parseFloat((document.getElementById('auto-down-num') as HTMLInputElement)?.value || '5000');
+    const tradeVal = parseFloat((document.getElementById('trade-in-val') as HTMLInputElement)?.value || '3000');
+    const tradeOwed = parseFloat((document.getElementById('trade-in-owed') as HTMLInputElement)?.value || '0');
+    const taxRate = parseFloat((document.getElementById('sales-tax-pct') as HTMLInputElement)?.value || '7.0');
+    const fees = parseFloat((document.getElementById('title-fees-num') as HTMLInputElement)?.value || '450');
+    const rate = parseFloat((document.getElementById('auto-rate-num') as HTMLInputElement)?.value || '5.5');
+    const months = parseInt((document.getElementById('auto-term-select') as HTMLSelectElement)?.value || '60');
+    const includeTaxes = (document.getElementById('include-taxes-toggle') as HTMLInputElement)?.checked;
+
+    const startMonth = parseInt((document.getElementById('auto-start-month') as HTMLSelectElement)?.value || '8');
+    const startYear = parseInt((document.getElementById('auto-start-year') as HTMLInputElement)?.value || '2026');
+
+    // Sync sliders
+    (document.getElementById('auto-price-slider') as HTMLInputElement).value = String(price);
+
+    const netTradeEquity = tradeVal - tradeOwed;
+    const taxableAmount = Math.max(0, price - netTradeEquity);
+    const salesTax = taxableAmount * (taxRate / 100);
+
+    let financed = price - down - netTradeEquity;
+    if (includeTaxes) {
+      financed += salesTax + fees;
+    }
+
+    financed = Math.max(0, financed);
+    const pmt = amortizedPayment(financed, rate, months);
+    const sched = amortizationSchedule(financed, rate, months, { startMonth, startYear });
+
+    const totalCost = (pmt * months) + down + (includeTaxes ? 0 : salesTax + fees);
+
+    // Update UI
+    (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pmt);
+    (document.getElementById('auto-breakdown-financed') as HTMLElement).textContent = formatCurrency(financed);
+    (document.getElementById('auto-breakdown-tax') as HTMLElement).textContent = formatCurrency(salesTax);
+    (document.getElementById('auto-breakdown-trade') as HTMLElement).textContent = formatCurrency(netTradeEquity);
+    (document.getElementById('auto-breakdown-interest') as HTMLElement).textContent = formatCurrency(sched.totalInterest);
+    (document.getElementById('auto-breakdown-total-cost') as HTMLElement).textContent = formatCurrency(totalCost);
+
+    const canvas = document.getElementById('auto-chart') as HTMLCanvasElement;
+    if (canvas) {
+      renderDonutChart(canvas, ['Financed Principal', 'Total Interest', 'Sales Tax & Fees'], [financed, sched.totalInterest, salesTax + fees]);
+    }
+
+    renderScheduleTable(sched);
+  }
+
+  let currentScheduleMode = 'annual';
+  let cachedSchedule: any = null;
+
+  function renderScheduleTable(sched: any) {
+    if (sched) cachedSchedule = sched;
+    if (!cachedSchedule) return;
+
+    const tableContainer = document.getElementById('auto-schedule');
+    if (tableContainer) tableContainer.classList.remove('hidden');
+
+    const tbody = document.getElementById('schedule-table-body');
+    if (!tbody) return;
+
+    const rows = currentScheduleMode === 'annual' ? cachedSchedule.annual : cachedSchedule.monthly;
+    tbody.innerHTML = rows.map((r: any) => `
+      <tr class="hover:bg-[var(--paper)] transition-colors border-b border-[var(--rule-light)]">
+        <td class="py-2 px-3">${currentScheduleMode === 'annual' ? 'Year ' + r.year : r.dateStr || ('Month ' + r.month)}</td>
+        <td class="py-2 px-3 text-right font-medium">${formatCurrency(r.payment || (r.principal + r.interest))}</td>
+        <td class="py-2 px-3 text-right text-[var(--green)]">${formatCurrency(r.principal)}</td>
+        <td class="py-2 px-3 text-right text-[var(--amber)]">${formatCurrency(r.interest)}</td>
+        <td class="py-2 px-3 text-right">${formatCurrency(r.totalInterest)}</td>
+        <td class="py-2 px-3 text-right font-semibold">${formatCurrency(r.balance)}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputs = ['auto-price-num', 'auto-price-slider', 'auto-down-num', 'trade-in-val', 'trade-in-owed', 'sales-tax-pct', 'title-fees-num', 'auto-rate-num', 'auto-term-select', 'auto-start-month', 'auto-start-year', 'include-taxes-toggle'];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updateAutoCalculator);
+        el.addEventListener('change', updateAutoCalculator);
+      }
+    });
+
+    document.getElementById('schedule-toggle-annual')?.addEventListener('click', (e) => {
+      currentScheduleMode = 'annual';
+      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      document.getElementById('schedule-toggle-monthly')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      renderScheduleTable(null);
+    });
+
+    document.getElementById('schedule-toggle-monthly')?.addEventListener('click', (e) => {
+      currentScheduleMode = 'monthly';
+      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      document.getElementById('schedule-toggle-annual')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      renderScheduleTable(null);
+    });
+
+    updateAutoCalculator();
+  });
+</script>

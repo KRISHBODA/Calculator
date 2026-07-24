@@ -1,0 +1,193 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="401K Calculator"
+  description="Project your total 401(k) nest egg at retirement with employer matching limits, salary growth projections, and inflation adjustments."
+  category="Retirement Planning"
+  categoryHref="/#retirement"
+  resultLabel="Projected 401(k) Balance at Retirement"
+  resultSuffix=""
+>
+  <!-- Input Controls (10 Options) -->
+  <div slot="inputs" class="space-y-4">
+    <!-- 1 & 2. Current Age & Retirement Age -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="cur-age-num" class="block text-[var(--ink-soft)] mb-1">1. Current Age</label>
+        <input type="number" id="cur-age-num" value="30" min="18" max="80" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="retire-age-num" class="block text-[var(--ink-soft)] mb-1">2. Retirement Age</label>
+        <input type="number" id="retire-age-num" value="65" min="50" max="90" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 3. Current 401k Balance -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="cur-bal-num" class="text-[var(--ink)]">3. Current 401(k) Balance</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="cur-bal-num" value="25000" min="0" max="2000000" step="1000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+    </div>
+
+    <!-- 4 & 5. Salary & Growth -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="annual-sal-num" class="block text-[var(--ink-soft)] mb-1">4. Annual Salary ($)</label>
+        <input type="number" id="annual-sal-num" value="85000" min="10000" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="sal-growth-pct" class="block text-[var(--ink-soft)] mb-1">5. Annual Salary Growth (%)</label>
+        <input type="number" id="sal-growth-pct" value="3.0" min="0" max="10" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 6, 7, 8. Contributions & Match -->
+    <div class="pt-2 space-y-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">6-8. Contributions & Employer Match</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="emp-contrib-pct" class="block text-[var(--ink-soft)] mb-1">6. Contrib (% sal)</label>
+          <input type="number" id="emp-contrib-pct" value="6.0" min="0" max="50" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="employer-match-pct" class="block text-[var(--ink-soft)] mb-1">7. Match (%)</label>
+          <input type="number" id="employer-match-pct" value="50.0" min="0" max="100" step="5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="match-cap-pct" class="block text-[var(--ink-soft)] mb-1">8. Match Cap (%)</label>
+          <input type="number" id="match-cap-pct" value="6.0" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 & 10. Return Rate & Inflation Adjustment -->
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="return-rate-pct" class="block text-[var(--ink-soft)] mb-1">9. Investment Return (%)</label>
+        <input type="number" id="return-rate-pct" value="7.0" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="inflation-rate-pct" class="block text-[var(--ink-soft)] mb-1">10. Inflation Rate (%)</label>
+        <input type="number" id="inflation-rate-pct" value="2.5" min="0" max="10" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Breakdown -->
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between items-center text-emerald-200/90">
+      <span>Total Employee Contributions:</span>
+      <span id="k401-breakdown-emp" class="font-bold text-white">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/80">
+      <span>Total Employer Match Contributions:</span>
+      <span id="k401-breakdown-match" class="font-bold text-emerald-300">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Total Compound Growth:</span>
+      <span id="k401-breakdown-growth">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center pt-2 border-t border-emerald-800/60 font-bold text-emerald-100">
+      <span>Nominal Balance at Age <span id="k401-age-display">65</span>:</span>
+      <span id="k401-breakdown-total">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1">
+      <span>Inflation-Adjusted Purchasing Power:</span>
+      <span id="k401-breakdown-inflation" class="font-bold text-white">$0.00</span>
+    </div>
+  </div>
+
+  <!-- Interactive Chart -->
+  <div slot="chart">
+    <ResultChart id="k401-chart" type="donut" title="401(k) Nest Egg Allocation" />
+  </div>
+
+  <!-- Formula Explanation -->
+  <div slot="formula-explanation" class="space-y-2">
+    <p>401(k) accumulation projects yearly contributions indexed to salary growth plus compound returns:</p>
+    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+      Employer Match = Min(Employee Contrib %, Match Cap %) × Match Rate % × Salary
+    </div>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p class="font-semibold text-[var(--ink)]">Test Case:</p>
+    <p>Age 30 to 65 with $25k starting balance, $85k salary (6% employee + 50% match up to 6%), and 7% return yields ~$1.48M at retirement.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+
+  function update401kCalculator() {
+    const curAge = parseInt((document.getElementById('cur-age-num') as HTMLInputElement)?.value || '30');
+    const retAge = parseInt((document.getElementById('retire-age-num') as HTMLInputElement)?.value || '65');
+    const startBal = parseFloat((document.getElementById('cur-bal-num') as HTMLInputElement)?.value || '25000');
+    let sal = parseFloat((document.getElementById('annual-sal-num') as HTMLInputElement)?.value || '85000');
+    const salGrowth = parseFloat((document.getElementById('sal-growth-pct') as HTMLInputElement)?.value || '3.0') / 100;
+    const empContribPct = parseFloat((document.getElementById('emp-contrib-pct') as HTMLInputElement)?.value || '6.0') / 100;
+    const matchRatePct = parseFloat((document.getElementById('employer-match-pct') as HTMLInputElement)?.value || '50.0') / 100;
+    const matchCapPct = parseFloat((document.getElementById('match-cap-pct') as HTMLInputElement)?.value || '6.0') / 100;
+    const returnRate = parseFloat((document.getElementById('return-rate-pct') as HTMLInputElement)?.value || '7.0') / 100;
+    const inflationRate = parseFloat((document.getElementById('inflation-rate-pct') as HTMLInputElement)?.value || '2.5') / 100;
+
+    const years = Math.max(1, retAge - curAge);
+    (document.getElementById('k401-age-display') as HTMLElement).textContent = String(retAge);
+
+    let balance = startBal;
+    let totalEmp = 0;
+    let totalMatch = 0;
+
+    for (let y = 1; y <= years; y++) {
+      const empContrib = sal * empContribPct;
+      const matchedPct = Math.min(empContribPct, matchCapPct);
+      const matchContrib = sal * matchedPct * matchRatePct;
+
+      totalEmp += empContrib;
+      totalMatch += matchContrib;
+
+      const annualTotal = empContrib + matchContrib;
+      balance = (balance + annualTotal) * (1 + returnRate);
+      sal *= (1 + salGrowth);
+    }
+
+    const totalGrowth = Math.max(0, balance - startBal - totalEmp - totalMatch);
+    const inflationAdjusted = balance / Math.pow(1 + inflationRate, years);
+
+    // Update UI
+    (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(balance);
+    (document.getElementById('k401-breakdown-emp') as HTMLElement).textContent = formatCurrency(totalEmp);
+    (document.getElementById('k401-breakdown-match') as HTMLElement).textContent = formatCurrency(totalMatch);
+    (document.getElementById('k401-breakdown-growth') as HTMLElement).textContent = formatCurrency(totalGrowth);
+    (document.getElementById('k401-breakdown-total') as HTMLElement).textContent = formatCurrency(balance);
+    (document.getElementById('k401-breakdown-inflation') as HTMLElement).textContent = formatCurrency(inflationAdjusted);
+
+    const canvas = document.getElementById('k401-chart') as HTMLCanvasElement;
+    if (canvas) {
+      renderDonutChart(
+        canvas,
+        ['Starting Balance', 'Employee Contributions', 'Employer Match', 'Investment Growth'],
+        [startBal, totalEmp, totalMatch, totalGrowth]
+      );
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputs = ['cur-age-num', 'retire-age-num', 'cur-bal-num', 'annual-sal-num', 'sal-growth-pct', 'emp-contrib-pct', 'employer-match-pct', 'match-cap-pct', 'return-rate-pct', 'inflation-rate-pct'];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', update401kCalculator);
+        el.addEventListener('change', update401kCalculator);
+      }
+    });
+
+    update401kCalculator();
+  });
+</script>

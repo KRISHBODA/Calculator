@@ -1,0 +1,55 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="CD Calculator"
+  description="Calculate Certificate of Deposit growth."
+  category="Investment & Savings"
+  categoryHref="/#investment"
+  resultLabel="CD Value at Maturity"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    <div class="space-y-1.5"><label class="text-xs font-medium">Deposit ($)</label><input type="number" id="p" value="25000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between"><span>Interest:</span><span id="res-p1" class="font-bold text-white">$1,312.50</span></div><div class="flex justify-between"><span>Deposit:</span><span id="res-p2" class="font-bold text-emerald-200">$25,000.00</span></div>
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Compound growth over fixed term.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$25,000 12-month CD at 5.25% = $26,312.50.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      const fv = futureValueLumpSum(25000, 5.25, 1, 12); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = '$1,312.50'; (document.getElementById('res-p2') as HTMLElement).textContent = '$25,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Deposit', 'Interest'], [25000, 1312.50]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

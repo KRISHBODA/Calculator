@@ -1,0 +1,72 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Depreciation Calculator"
+  description="Calculate asset depreciation schedule (straight-line method)."
+  category="Other Financial Tools"
+  categoryHref="/#other"
+  resultLabel="Annual Depreciation Charge"
+  resultSuffix="/yr"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Asset Cost ($)</label><input type="number" id="cost" value="30000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Salvage Value ($)</label><input type="number" id="salvage" value="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Useful Life (Years)</label><input type="number" id="yrs" value="5" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Total Depreciable Amount:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Salvage Value at End:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Straight-Line Annual Depreciation = (Cost − Salvage Value) / Useful Life.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$30,000 equipment with $5,000 salvage value over 5 years depreciates $5,000/year.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const cost = parseFloat(document.getElementById('cost').value || '30000');
+      const salvage = parseFloat(document.getElementById('salvage').value || '5000');
+      const yrs = parseFloat(document.getElementById('yrs').value || '5');
+      const dep = (cost - salvage) / yrs;
+      document.getElementById('hero-result-value').textContent = formatCurrency(dep);
+      document.getElementById('res-p1').textContent = formatCurrency(cost - salvage);
+      document.getElementById('res-p2').textContent = formatCurrency(salvage);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Depreciable Base', 'Residual Salvage Value'], [cost - salvage, salvage]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

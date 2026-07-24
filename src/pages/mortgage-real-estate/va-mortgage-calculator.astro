@@ -1,0 +1,73 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="VA Mortgage Calculator"
+  description="Calculate VA loan monthly payment incorporating funding fee tiers."
+  category="Mortgage & Real Estate"
+  categoryHref="/#mortgage-real-estate"
+  resultLabel="Monthly VA Loan Payment"
+  resultSuffix="/mo"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Home Purchase Price ($)</label><input type="number" id="price" value="300000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">VA Funding Fee (%)</label><input type="number" id="fee" value="2.15" step="0.05" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="rate" value="6.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>VA Funding Fee Financed:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Total Financed Amount:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>VA Loan = (Home Price − Down Payment + Financed Funding Fee) amortized over loan term.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$300,000 VA loan with 0% down and 2.15% funding fee ($6,450) yields ~$1,837/mo at 6%.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const price = parseFloat(document.getElementById('price').value || '300000');
+      const feePct = parseFloat(document.getElementById('fee').value || '2.15');
+      const rate = parseFloat(document.getElementById('rate').value || '6.0');
+      const fundingFee = price * (feePct / 100);
+      const totalLoan = price + fundingFee;
+      const pmt = amortizedPayment(totalLoan, rate, 360);
+      document.getElementById('hero-result-value').textContent = formatCurrency(pmt);
+      document.getElementById('res-p1').textContent = formatCurrency(fundingFee);
+      document.getElementById('res-p2').textContent = formatCurrency(totalLoan);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Base Purchase Price', 'Financed VA Funding Fee'], [price, fundingFee]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

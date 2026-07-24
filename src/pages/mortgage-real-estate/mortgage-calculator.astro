@@ -1,0 +1,371 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+import ScheduleTable from '../../components/ScheduleTable.astro';
+---
+
+<CalculatorShell
+  title="Mortgage Calculator"
+  description="Estimate your total monthly mortgage payment including principal, interest, taxes, insurance, HOA, and PMI with extra payment payoff options and full amortization schedule."
+  category="Mortgage & Real Estate"
+  categoryHref="/#mortgage-real-estate"
+  resultLabel="Estimated Total Monthly Payment"
+  resultSuffix="/mo"
+>
+  <!-- Input Controls (10+ Options) -->
+  <div slot="inputs" class="space-y-4">
+    <!-- 1. Home Purchase Price -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="home-price-num" class="text-[var(--ink)]">1. Home Purchase Price</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="home-price-num" value="350000" min="10000" max="5000000" step="5000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="home-price-slider" value="350000" min="10000" max="2000000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- 2. Down Payment ($ and %) -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="down-payment-num" class="text-[var(--ink)]">2. Down Payment ($ / %)</label>
+        <div class="flex items-center space-x-2 font-mono text-[var(--ink-soft)]">
+          <span>$<input type="number" id="down-payment-num" value="70000" min="0" max="5000000" step="1000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+          <span class="text-[10px] text-[var(--ink-soft)]">(<input type="number" id="down-payment-pct-input" value="20" min="0" max="100" step="0.5" class="w-12 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" />%)</span>
+        </div>
+      </div>
+      <input type="range" id="down-payment-slider" value="70000" min="0" max="500000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- 3. Loan Term -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="loan-term-select" class="text-[var(--ink)]">3. Loan Term</label>
+        <select id="loan-term-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 focus:outline-none focus:border-[var(--green)] font-mono">
+          <option value="30" selected>30 Years (360 mos)</option>
+          <option value="20">20 Years (240 mos)</option>
+          <option value="15">15 Years (180 mos)</option>
+          <option value="10">10 Years (120 mos)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 4. Interest Rate (%) -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="interest-rate-num" class="text-[var(--ink)]">4. Interest Rate (%)</label>
+        <span class="font-mono text-[var(--ink-soft)]"><input type="number" id="interest-rate-num" value="6.5" min="0.1" max="20.0" step="0.1" class="w-16 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /> %</span>
+      </div>
+      <input type="range" id="interest-rate-slider" value="6.5" min="0.1" max="15.0" step="0.1" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- 5 & 6. Taxes & Insurance -->
+    <div class="pt-2 space-y-3 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">5-8. Taxes, Insurance & Fees</div>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label for="property-tax-num" class="block text-[var(--ink-soft)] mb-1">5. Property Tax ($/yr)</label>
+          <input type="number" id="property-tax-num" value="4200" min="0" step="100" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)] focus:outline-none focus:border-[var(--green)]" />
+          <span class="text-[10px] text-[var(--ink-soft)] block text-right mt-0.5"><span id="tax-pct-display">1.2</span>% of home price</span>
+        </div>
+        <div>
+          <label for="home-insurance-num" class="block text-[var(--ink-soft)] mb-1">6. Home Insurance ($/yr)</label>
+          <input type="number" id="home-insurance-num" value="1500" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)] focus:outline-none focus:border-[var(--green)]" />
+        </div>
+        <div>
+          <label for="pmi-num" class="block text-[var(--ink-soft)] mb-1">7. PMI Rate (%)</label>
+          <input type="number" id="pmi-num" value="0.5" min="0" max="3" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)] focus:outline-none focus:border-[var(--green)]" />
+          <span class="text-[10px] text-[var(--ink-soft)] block text-right mt-0.5">Applies if Down &lt; 20%</span>
+        </div>
+        <div>
+          <label for="hoa-num" class="block text-[var(--ink-soft)] mb-1">8. HOA Fees ($/mo)</label>
+          <input type="number" id="hoa-num" value="0" min="0" step="10" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)] focus:outline-none focus:border-[var(--green)]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Start Date Selection -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label class="block text-xs font-medium text-[var(--ink)] mb-1">9. Loan Start Date</label>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <select id="start-month-select" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
+          <option value="1">Jan</option>
+          <option value="2">Feb</option>
+          <option value="3">Mar</option>
+          <option value="4">Apr</option>
+          <option value="5">May</option>
+          <option value="6">Jun</option>
+          <option value="7">Jul</option>
+          <option value="8" selected>Aug</option>
+          <option value="9">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
+        </select>
+        <input type="number" id="start-year-num" value="2026" min="2020" max="2050" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 10. Extra Payment Payoff Acceleration Options -->
+    <div class="pt-2 space-y-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">10. Extra Payment Payoff Options</div>
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label for="extra-monthly" class="block text-[var(--ink-soft)] mb-1">Extra Monthly ($)</label>
+          <input type="number" id="extra-monthly" value="0" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="extra-annual" class="block text-[var(--ink-soft)] mb-1">Extra Yearly ($)</label>
+          <input type="number" id="extra-annual" value="0" min="0" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="extra-onetime" class="block text-[var(--ink-soft)] mb-1">One-Time ($)</label>
+          <input type="number" id="extra-onetime" value="0" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Inputs (Slot) -->
+  <div slot="compare-inputs" class="space-y-4">
+    <div class="space-y-1.5">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="comp-term-select" class="text-[var(--ink)]">Scenario B Term</label>
+        <select id="comp-term-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
+          <option value="15">15 Years (180 mos)</option>
+          <option value="30" selected>30 Years (360 mos)</option>
+        </select>
+      </div>
+    </div>
+    <div class="space-y-1.5">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="comp-rate-num" class="text-[var(--ink)]">Scenario B Interest Rate (%)</label>
+        <input type="number" id="comp-rate-num" value="5.5" min="0.1" max="15.0" step="0.1" class="w-20 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 text-xs font-mono" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Breakdown Lines -->
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between items-center">
+      <span class="text-emerald-200/80">Principal & Interest:</span>
+      <span id="breakdown-pi" class="font-bold text-white">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Property Tax:</span>
+      <span id="breakdown-tax">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Home Insurance:</span>
+      <span id="breakdown-insurance">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>HOA & PMI:</span>
+      <span id="breakdown-hoa-pmi">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center pt-2 border-t border-emerald-800/60 font-bold text-emerald-100">
+      <span>Total Loan Interest Paid:</span>
+      <span id="breakdown-total-interest">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1">
+      <span>Payoff Date:</span>
+      <span id="breakdown-payoff-date" class="font-bold">Aug 2056</span>
+    </div>
+  </div>
+
+  <!-- Interactive Chart -->
+  <div slot="chart">
+    <ResultChart id="mortgage-chart" type="donut" title="Monthly Payment Breakdown" />
+  </div>
+
+  <!-- Schedule Table -->
+  <div slot="table">
+    <ScheduleTable id="mortgage-schedule" title="Mortgage Amortization Schedule" />
+  </div>
+
+  <!-- Formula & Worked Example -->
+  <div slot="formula-explanation" class="space-y-2">
+    <p>
+      The monthly principal and interest payment is calculated using the standard amortized loan formula:
+    </p>
+    <div class="p-3 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)] my-2">
+      M = P × [ r(1 + r)ⁿ ] / [ (1 + r)ⁿ - 1 ]
+    </div>
+    <ul class="list-disc list-inside space-y-1 text-xs text-[var(--ink-soft)]">
+      <li><strong>M</strong> = Monthly Principal & Interest Payment</li>
+      <li><strong>P</strong> = Net Loan Amount (Home Price - Down Payment)</li>
+      <li><strong>r</strong> = Monthly Interest Rate (Annual Rate / 12)</li>
+      <li><strong>n</strong> = Total Number of Monthly Payments (Years × 12)</li>
+    </ul>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p class="font-semibold text-[var(--ink)]">Standard Test Case:</p>
+    <p>
+      For a <strong>$350,000</strong> home loan with a <strong>$70,000 (20%)</strong> down payment at a <strong>6.5%</strong> rate over <strong>30 years</strong>:
+    </p>
+    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule-light)] rounded font-mono text-xs space-y-1">
+      <div class="flex justify-between"><span>Net Loan Principal:</span><span>$280,000.00</span></div>
+      <div class="flex justify-between font-bold text-[var(--green)]"><span>Principal & Interest:</span><span>$1,770.00 / mo</span></div>
+      <div class="flex justify-between text-[var(--ink-soft)]"><span>Total Taxes & Insurance:</span><span>$475.00 / mo</span></div>
+      <div class="flex justify-between font-bold text-white border-t border-[var(--rule-light)] pt-1"><span>Total Monthly Payment:</span><span>$2,245.00 / mo</span></div>
+    </div>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+
+  function updateMortgageCalculator() {
+    const homePrice = parseFloat((document.getElementById('home-price-num') as HTMLInputElement)?.value || '350000');
+    let downPayment = parseFloat((document.getElementById('down-payment-num') as HTMLInputElement)?.value || '70000');
+    const rate = parseFloat((document.getElementById('interest-rate-num') as HTMLInputElement)?.value || '6.5');
+    const years = parseInt((document.getElementById('loan-term-select') as HTMLSelectElement)?.value || '30');
+    const propertyTaxYr = parseFloat((document.getElementById('property-tax-num') as HTMLInputElement)?.value || '4200');
+    const insuranceYr = parseFloat((document.getElementById('home-insurance-num') as HTMLInputElement)?.value || '1500');
+    const hoaMo = parseFloat((document.getElementById('hoa-num') as HTMLInputElement)?.value || '0');
+    const pmiPct = parseFloat((document.getElementById('pmi-num') as HTMLInputElement)?.value || '0.5');
+
+    const startMonth = parseInt((document.getElementById('start-month-select') as HTMLSelectElement)?.value || '8');
+    const startYear = parseInt((document.getElementById('start-year-num') as HTMLInputElement)?.value || '2026');
+
+    const extraMonthly = parseFloat((document.getElementById('extra-monthly') as HTMLInputElement)?.value || '0');
+    const extraAnnual = parseFloat((document.getElementById('extra-annual') as HTMLInputElement)?.value || '0');
+    const extraOneTime = parseFloat((document.getElementById('extra-onetime') as HTMLInputElement)?.value || '0');
+
+    // Sync sliders
+    (document.getElementById('home-price-slider') as HTMLInputElement).value = String(homePrice);
+    (document.getElementById('down-payment-slider') as HTMLInputElement).value = String(downPayment);
+    (document.getElementById('interest-rate-slider') as HTMLInputElement).value = String(rate);
+
+    // Calculations
+    const principal = Math.max(0, homePrice - downPayment);
+    const downPct = homePrice > 0 ? (downPayment / homePrice) * 100 : 0;
+    (document.getElementById('down-payment-pct-input') as HTMLInputElement).value = downPct.toFixed(1);
+
+    const taxPct = homePrice > 0 ? (propertyTaxYr / homePrice) * 100 : 0;
+    (document.getElementById('tax-pct-display') as HTMLElement).textContent = taxPct.toFixed(2);
+
+    const months = years * 12;
+    const piMonthly = amortizedPayment(principal, rate, months);
+    const taxMonthly = propertyTaxYr / 12;
+    const insuranceMonthly = insuranceYr / 12;
+    
+    // PMI is typically charged if down payment < 20%
+    const pmiMonthly = downPct < 20 ? (principal * (pmiPct / 100)) / 12 : 0;
+    const totalMonthly = piMonthly + taxMonthly + insuranceMonthly + hoaMo + pmiMonthly + extraMonthly;
+
+    // Amortization Schedule
+    const sched = amortizationSchedule(principal, rate, months, {
+      extraMonthly,
+      extraAnnual,
+      extraOneTime,
+      extraOneTimeMonth: 1,
+      startMonth,
+      startYear
+    });
+
+    // Update Hero Result
+    const heroEl = document.getElementById('hero-result-value');
+    if (heroEl) heroEl.textContent = formatCurrency(totalMonthly);
+
+    // Update Breakdown
+    (document.getElementById('breakdown-pi') as HTMLElement).textContent = formatCurrency(piMonthly);
+    (document.getElementById('breakdown-tax') as HTMLElement).textContent = formatCurrency(taxMonthly);
+    (document.getElementById('breakdown-insurance') as HTMLElement).textContent = formatCurrency(insuranceMonthly);
+    (document.getElementById('breakdown-hoa-pmi') as HTMLElement).textContent = formatCurrency(hoaMo + pmiMonthly);
+    (document.getElementById('breakdown-total-interest') as HTMLElement).textContent = formatCurrency(sched.totalInterest);
+
+    const lastRow = sched.monthly[sched.monthly.length - 1];
+    if (lastRow) {
+      (document.getElementById('breakdown-payoff-date') as HTMLElement).textContent = lastRow.dateStr || `${startMonth}/${startYear + years}`;
+    }
+
+    // Update Proportion Bar
+    const piRatio = totalMonthly > 0 ? (piMonthly / totalMonthly) * 100 : 100;
+    const extrasRatio = 100 - piRatio;
+    const barLeft = document.getElementById('proportion-bar-left');
+    const barRight = document.getElementById('proportion-bar-right');
+    if (barLeft) barLeft.style.width = `${piRatio}%`;
+    if (barRight) barRight.style.width = `${extrasRatio}%`;
+
+    // Render Chart
+    const canvas = document.getElementById('mortgage-chart') as HTMLCanvasElement;
+    if (canvas) {
+      renderDonutChart(
+        canvas,
+        ['Principal & Interest', 'Property Tax', 'Insurance', 'HOA & PMI'],
+        [piMonthly, taxMonthly, insuranceMonthly, hoaMo + pmiMonthly]
+      );
+    }
+
+    // Populate Schedule Table
+    renderScheduleTable(sched);
+  }
+
+  let currentScheduleMode = 'annual';
+  let cachedSchedule: any = null;
+
+  function renderScheduleTable(sched: any) {
+    if (sched) cachedSchedule = sched;
+    if (!cachedSchedule) return;
+
+    const tableContainer = document.getElementById('mortgage-schedule');
+    if (tableContainer) tableContainer.classList.remove('hidden');
+
+    const tbody = document.getElementById('schedule-table-body');
+    if (!tbody) return;
+
+    const rows = currentScheduleMode === 'annual' ? cachedSchedule.annual : cachedSchedule.monthly;
+    tbody.innerHTML = rows.map((r: any) => `
+      <tr class="hover:bg-[var(--paper)] transition-colors border-b border-[var(--rule-light)]">
+        <td class="py-2 px-3">${currentScheduleMode === 'annual' ? 'Year ' + r.year : r.dateStr || ('Month ' + r.month)}</td>
+        <td class="py-2 px-3 text-right font-medium">${formatCurrency(r.payment || (r.principal + r.interest))}</td>
+        <td class="py-2 px-3 text-right text-[var(--green)]">${formatCurrency(r.principal)}</td>
+        <td class="py-2 px-3 text-right text-[var(--amber)]">${formatCurrency(r.interest)}</td>
+        <td class="py-2 px-3 text-right">${formatCurrency(r.totalInterest)}</td>
+        <td class="py-2 px-3 text-right font-semibold">${formatCurrency(r.balance)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // Event Listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputs = ['home-price-num', 'home-price-slider', 'down-payment-num', 'down-payment-pct-input', 'down-payment-slider', 'interest-rate-num', 'interest-rate-slider', 'loan-term-select', 'property-tax-num', 'home-insurance-num', 'hoa-num', 'pmi-num', 'start-month-select', 'start-year-num', 'extra-monthly', 'extra-annual', 'extra-onetime'];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updateMortgageCalculator);
+        el.addEventListener('change', updateMortgageCalculator);
+      }
+    });
+
+    // Handle % to $ sync for Down Payment
+    document.getElementById('down-payment-pct-input')?.addEventListener('input', (e) => {
+      const pct = parseFloat((e.target as HTMLInputElement).value || '0');
+      const hp = parseFloat((document.getElementById('home-price-num') as HTMLInputElement).value || '0');
+      const dollarVal = (hp * (pct / 100));
+      (document.getElementById('down-payment-num') as HTMLInputElement).value = String(Math.round(dollarVal));
+      updateMortgageCalculator();
+    });
+
+    // Schedule Mode Toggle
+    document.getElementById('schedule-toggle-annual')?.addEventListener('click', (e) => {
+      currentScheduleMode = 'annual';
+      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      document.getElementById('schedule-toggle-monthly')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      renderScheduleTable(null);
+    });
+
+    document.getElementById('schedule-toggle-monthly')?.addEventListener('click', (e) => {
+      currentScheduleMode = 'monthly';
+      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      document.getElementById('schedule-toggle-annual')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      renderScheduleTable(null);
+    });
+
+    // Initial calculation
+    updateMortgageCalculator();
+  });
+</script>

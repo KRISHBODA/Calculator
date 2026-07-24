@@ -1,0 +1,54 @@
+---
+interface Props {
+  id?: string;
+  title?: string;
+}
+
+const { id = "schedule-table-container", title = "Amortization & Payoff Schedule" } = Astro.props;
+---
+
+<div id={id} class="bg-[var(--paper-raised)] border border-[var(--rule)] rounded-lg p-5 mt-8 transition-colors hidden">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--rule)]">
+    <div>
+      <h3 class="font-serif text-lg font-bold text-[var(--ink)]">{title}</h3>
+      <p class="text-xs text-[var(--ink-soft)] mt-0.5">Month-by-month and annual breakdown of principal, interest, and remaining balance.</p>
+    </div>
+
+    <!-- Monthly / Annual Toggle Buttons -->
+    <div class="inline-flex p-1 rounded-md bg-[var(--paper)] border border-[var(--rule-light)] self-start sm:self-auto">
+      <button
+        type="button"
+        id="schedule-toggle-annual"
+        class="px-3 py-1 text-xs font-medium rounded text-[var(--ink)] bg-[var(--paper-raised)] shadow-sm transition-all cursor-pointer"
+      >
+        Annual Schedule
+      </button>
+      <button
+        type="button"
+        id="schedule-toggle-monthly"
+        class="px-3 py-1 text-xs font-medium rounded text-[var(--ink-soft)] hover:text-[var(--ink)] transition-all cursor-pointer"
+      >
+        Monthly Schedule
+      </button>
+    </div>
+  </div>
+
+  <!-- Scrollable Table Container -->
+  <div class="overflow-x-auto mt-4 max-h-96 scrollbar-thin">
+    <table class="w-full text-left border-collapse text-xs font-mono">
+      <thead class="sticky top-0 bg-[var(--paper-raised)] border-b border-[var(--rule)] text-[var(--ink-soft)]">
+        <tr>
+          <th class="py-2.5 px-3 font-semibold uppercase tracking-wider">Period</th>
+          <th class="py-2.5 px-3 font-semibold uppercase tracking-wider text-right">Payment</th>
+          <th class="py-2.5 px-3 font-semibold uppercase tracking-wider text-right">Principal</th>
+          <th class="py-2.5 px-3 font-semibold uppercase tracking-wider text-right">Interest</th>
+          <th class="py-2.5 px-3 font-semibold uppercase tracking-wider text-right">Total Interest</th>
+          <th class="py-2.5 px-3 font-semibold uppercase tracking-wider text-right">Ending Balance</th>
+        </tr>
+      </thead>
+      <tbody id="schedule-table-body" class="divide-y divide-[var(--rule-light)] text-[var(--ink)] font-mono-tabular">
+        <!-- Dynamic rows populated via JS -->
+      </tbody>
+    </table>
+  </div>
+</div>

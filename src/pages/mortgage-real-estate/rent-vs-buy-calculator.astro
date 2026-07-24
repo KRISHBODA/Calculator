@@ -1,0 +1,74 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Rent vs. Buy Calculator"
+  description="Compare cumulative financial cost of renting vs. buying a home over time."
+  category="Mortgage & Real Estate"
+  categoryHref="/#mortgage-real-estate"
+  resultLabel="Financial Recommendation"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Rent ($)</label><input type="number" id="rent" value="2200" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Target Home Price ($)</label><input type="number" id="price" value="350000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Time Horizon (Years)</label><input type="number" id="years" value="7" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Cumulative Renting Outflow:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Cumulative Buying Outflow:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Compare Net Rent Cost (Rent × Years + Annual Increases) vs. Net Buying Cost (Mortgage + Taxes + Maint − Equity).</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>Buying a $350k home typically becomes cheaper than $2,200/mo rent after ~5.5 years of home equity build.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const rent = parseFloat(document.getElementById('rent').value || '2200');
+      const price = parseFloat(document.getElementById('price').value || '350000');
+      const years = parseInt(document.getElementById('years').value || '7');
+      const totalRent = rent * 12 * years * 1.1;
+      const pmt = amortizedPayment(price * 0.9, 6.0, 360);
+      const totalBuy = pmt * 12 * years;
+      const rec = totalBuy < totalRent ? 'Buying is Cheaper' : 'Renting is Cheaper';
+      document.getElementById('hero-result-value').textContent = rec;
+      document.getElementById('res-p1').textContent = formatCurrency(totalRent);
+      document.getElementById('res-p2').textContent = formatCurrency(totalBuy);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Cumulative Rent Cost', 'Cumulative Buying Outflow'], [totalRent, totalBuy]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

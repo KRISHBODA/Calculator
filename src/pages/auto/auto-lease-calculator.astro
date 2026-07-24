@@ -1,0 +1,188 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Auto Lease Calculator"
+  description="Calculate monthly auto lease payments including depreciation fee, finance charge, sales tax, and total upfront cash required at signing."
+  category="Auto Loans & Leases"
+  categoryHref="/#auto"
+  resultLabel="Monthly Lease Payment"
+  resultSuffix="/mo"
+>
+  <!-- Input Controls (10 Options matching calculator.net) -->
+  <div slot="inputs" class="space-y-4">
+    <!-- 1 & 2. Vehicle MSRP & Negotiated Cap Cost -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="lease-msrp-num" class="block text-[var(--ink-soft)] mb-1">1. Vehicle MSRP ($)</label>
+        <input type="number" id="lease-msrp-num" value="40000" min="5000" max="200000" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="lease-cap-num" class="block text-[var(--ink-soft)] mb-1">2. Negotiated Cap Price ($)</label>
+        <input type="number" id="lease-cap-num" value="37500" min="5000" max="200000" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 3 & 4. Down Payment & Trade-in -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="lease-down-num" class="block text-[var(--ink-soft)] mb-1">3. Cash Down Payment ($)</label>
+        <input type="number" id="lease-down-num" value="2500" min="0" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="lease-trade-num" class="block text-[var(--ink-soft)] mb-1">4. Trade-in Credit ($)</label>
+        <input type="number" id="lease-trade-num" value="1500" min="0" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 5 & 6. Residual Value & Lease Term -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="lease-res-pct" class="block text-[var(--ink-soft)] mb-1">5. Residual Value (%)</label>
+        <input type="number" id="lease-res-pct" value="58.0" min="10" max="90" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <span class="text-[10px] text-[var(--ink-soft)] block text-right mt-0.5">$<span id="lease-res-dollars">23200</span> residual</span>
+      </div>
+      <div>
+        <label for="lease-term-select" class="block text-[var(--ink-soft)] mb-1">6. Lease Term</label>
+        <select id="lease-term-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
+          <option value="24">24 Months (2 yrs)</option>
+          <option value="36" selected>36 Months (3 yrs)</option>
+          <option value="48">48 Months (4 yrs)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 7 & 8. Money Factor / Rate & Sales Tax -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="lease-mf-num" class="block text-[var(--ink-soft)] mb-1">7. Money Factor (MF)</label>
+        <input type="number" id="lease-mf-num" value="0.0021" min="0.0001" max="0.01" step="0.0001" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <span class="text-[10px] text-[var(--ink-soft)] block text-right mt-0.5">Equiv APR: <span id="lease-apr-display">5.04</span>%</span>
+      </div>
+      <div>
+        <label for="lease-tax-pct" class="block text-[var(--ink-soft)] mb-1">8. Sales Tax Rate (%)</label>
+        <input type="number" id="lease-tax-pct" value="7.0" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 9 & 10. Fees & Upfront Cash -->
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="lease-fees-num" class="block text-[var(--ink-soft)] mb-1">9. Acquisition Fee ($)</label>
+        <input type="number" id="lease-fees-num" value="650" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="lease-dispo-num" class="block text-[var(--ink-soft)] mb-1">10. Disposition Fee ($)</label>
+        <input type="number" id="lease-dispo-num" value="395" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Breakdown -->
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between items-center text-emerald-200/90">
+      <span>Monthly Depreciation Fee:</span>
+      <span id="lease-breakdown-dep" class="font-bold text-white">$0.00 / mo</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/80">
+      <span>Monthly Rent / Finance Fee:</span>
+      <span id="lease-breakdown-rent" class="font-bold text-emerald-300">$0.00 / mo</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Monthly Sales Tax:</span>
+      <span id="lease-breakdown-tax" class="font-bold">$0.00 / mo</span>
+    </div>
+    <div class="flex justify-between items-center pt-2 border-t border-emerald-800/60 font-bold text-white">
+      <span>Total Monthly Lease Payment:</span>
+      <span id="lease-breakdown-total" class="text-emerald-300">$0.00 / mo</span>
+    </div>
+    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1">
+      <span>Total Out-of-Pocket Lease Cost:</span>
+      <span id="lease-breakdown-out-of-pocket" class="font-bold text-white">$0.00</span>
+    </div>
+  </div>
+
+  <!-- Interactive Chart -->
+  <div slot="chart">
+    <ResultChart id="lease-chart" type="donut" title="Monthly Lease Fee Breakdown" />
+  </div>
+
+  <!-- Formula Explanation -->
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Monthly lease payment formula combining depreciation, rent fee, and sales tax:</p>
+    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)] space-y-1">
+      <div>Depreciation = (Net Cap Cost - Residual Value) / Term</div>
+      <div>Rent Fee = (Net Cap Cost + Residual Value) × Money Factor</div>
+    </div>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p class="font-semibold text-[var(--ink)]">Test Case:</p>
+    <p>$40,000 MSRP vehicle ($37,500 cap price) with $2,500 down and 58% residual over 36 months @ 0.0021 MF = ~$485/month total lease payment.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+
+  function updateAutoLeaseCalculator() {
+    const msrp = parseFloat((document.getElementById('lease-msrp-num') as HTMLInputElement)?.value || '40000');
+    const cap = parseFloat((document.getElementById('lease-cap-num') as HTMLInputElement)?.value || '37500');
+    const down = parseFloat((document.getElementById('lease-down-num') as HTMLInputElement)?.value || '2500');
+    const trade = parseFloat((document.getElementById('lease-trade-num') as HTMLInputElement)?.value || '1500');
+    const resPct = parseFloat((document.getElementById('lease-res-pct') as HTMLInputElement)?.value || '58.0');
+    const term = parseInt((document.getElementById('lease-term-select') as HTMLSelectElement)?.value || '36');
+    const mf = parseFloat((document.getElementById('lease-mf-num') as HTMLInputElement)?.value || '0.0021');
+    const taxRate = parseFloat((document.getElementById('lease-tax-pct') as HTMLInputElement)?.value || '7.0');
+    const acqFee = parseFloat((document.getElementById('lease-fees-num') as HTMLInputElement)?.value || '650');
+    const dispoFee = parseFloat((document.getElementById('lease-dispo-num') as HTMLInputElement)?.value || '395');
+
+    const residualDollars = msrp * (resPct / 100);
+    (document.getElementById('lease-res-dollars') as HTMLElement).textContent = formatCurrency(residualDollars, 'USD', 0).replace('$', '');
+
+    const equivApr = mf * 2400;
+    (document.getElementById('lease-apr-display') as HTMLElement).textContent = equivApr.toFixed(2);
+
+    const netCapCost = cap - down - trade + acqFee;
+    const depFee = Math.max(0, (netCapCost - residualDollars) / term);
+    const rentFee = Math.max(0, (netCapCost + residualDollars) * mf);
+    const preTaxPmt = depFee + rentFee;
+    const monthlyTax = preTaxPmt * (taxRate / 100);
+    const totalPmt = preTaxPmt + monthlyTax;
+
+    const totalLeaseOutflow = (totalPmt * term) + down + trade + dispoFee;
+
+    (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(totalPmt);
+    (document.getElementById('lease-breakdown-dep') as HTMLElement).textContent = formatCurrency(depFee) + '/mo';
+    (document.getElementById('lease-breakdown-rent') as HTMLElement).textContent = formatCurrency(rentFee) + '/mo';
+    (document.getElementById('lease-breakdown-tax') as HTMLElement).textContent = formatCurrency(monthlyTax) + '/mo';
+    (document.getElementById('lease-breakdown-total') as HTMLElement).textContent = formatCurrency(totalPmt) + '/mo';
+    (document.getElementById('lease-breakdown-out-of-pocket') as HTMLElement).textContent = formatCurrency(totalLeaseOutflow);
+
+    const canvas = document.getElementById('lease-chart') as HTMLCanvasElement;
+    if (canvas) {
+      renderDonutChart(
+        canvas,
+        ['Depreciation Fee', 'Finance Rent Fee', 'Monthly Sales Tax'],
+        [depFee, rentFee, monthlyTax]
+      );
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputs = ['lease-msrp-num', 'lease-cap-num', 'lease-down-num', 'lease-trade-num', 'lease-res-pct', 'lease-term-select', 'lease-mf-num', 'lease-tax-pct', 'lease-fees-num', 'lease-dispo-num'];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updateAutoLeaseCalculator);
+        el.addEventListener('change', updateAutoLeaseCalculator);
+      }
+    });
+
+    updateAutoLeaseCalculator();
+  });
+</script>

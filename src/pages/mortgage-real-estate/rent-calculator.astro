@@ -1,0 +1,76 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Rent Calculator"
+  description="Calculate recommended monthly rent based on the 30% gross monthly income rule of thumb."
+  category="Mortgage & Real Estate"
+  categoryHref="/#mortgage-real-estate"
+  resultLabel="Recommended Max Rent"
+  resultSuffix="/mo"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Gross Annual Income ($)</label><input type="number" id="annual-income" value="80000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Target Income Ratio (%)</label><input type="number" id="rent-ratio" value="30" min="15" max="50" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Gross Monthly Income:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Income Left for Other Spending:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Recommended Rent = (Gross Annual Income / 12) × Target Rent Ratio (default 30%).</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>For an $80,000 annual salary, 30% maximum rule suggests a monthly rent cap of $2,000/month.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const income = parseFloat(document.getElementById('annual-income').value || '80000');
+      const ratio = parseFloat(document.getElementById('rent-ratio').value || '30');
+      const grossMonthly = income / 12;
+      const maxRent = grossMonthly * (ratio / 100);
+      const remaining = grossMonthly - maxRent;
+
+      document.getElementById('hero-result-value').textContent = formatCurrency(maxRent);
+      document.getElementById('res-p1').textContent = formatCurrency(grossMonthly) + '/mo';
+      document.getElementById('res-p2').textContent = formatCurrency(remaining) + '/mo';
+
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) {
+        renderDonutChart(canvas, ['Recommended Rent', 'Other Income / Expenses'], [maxRent, remaining]);
+      }
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

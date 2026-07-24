@@ -1,0 +1,230 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  category: string;
+  categoryHref: string;
+  resultLabel?: string;
+  resultSuffix?: string;
+  hasCompareMode?: boolean;
+}
+
+const {
+  title,
+  description,
+  category,
+  categoryHref,
+  resultLabel = "Estimated Monthly Payment",
+  resultSuffix = "/mo",
+  hasCompareMode = true
+} = Astro.props;
+---
+
+<Layout title={`${title} — Free Online Ledger Calculator`} description={description}>
+  <div class="space-y-8">
+    <!-- Breadcrumb & Title Section -->
+    <div class="border-b border-[var(--rule)] pb-4">
+      <nav class="flex items-center space-x-2 text-xs font-mono text-[var(--ink-soft)] mb-2">
+        <a href="/" class="hover:text-[var(--ink)] transition-colors">Home</a>
+        <span>/</span>
+        <a href={categoryHref} class="hover:text-[var(--ink)] transition-colors">{category}</a>
+        <span>/</span>
+        <span class="text-[var(--ink)] font-semibold">{title}</span>
+      </nav>
+
+      <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
+        <div>
+          <h1 class="font-serif text-3xl sm:text-4xl font-bold text-[var(--ink)] tracking-tight">
+            {title}
+          </h1>
+          <p class="text-sm text-[var(--ink-soft)] mt-1 max-w-2xl leading-relaxed">
+            {description}
+          </p>
+        </div>
+
+        <!-- Action Bar: Share URL & Compare Mode Toggle -->
+        <div class="flex items-center space-x-3 self-start sm:self-auto">
+          {hasCompareMode && (
+            <button
+              type="button"
+              id="compare-mode-btn"
+              class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium border border-[var(--rule)] bg-[var(--paper-raised)] text-[var(--ink)] hover:border-[var(--green)] transition-all cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5 text-[var(--green)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+              </svg>
+              <span>Compare Scenarios</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            id="share-calc-btn"
+            class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium border border-[var(--rule)] bg-[var(--paper-raised)] text-[var(--ink)] hover:border-[var(--green)] transition-all cursor-pointer"
+            title="Copy link with current inputs"
+          >
+            <svg class="w-3.5 h-3.5 text-[var(--ink-soft)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+            </svg>
+            <span id="share-btn-text">Share Link</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Two-Column Calculator Shell -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- Left Column: Inputs Panel (Ledger Rows) -->
+      <div id="calculator-inputs-column" class="lg:col-span-7 space-y-6">
+        <div class="bg-[var(--paper-raised)] border border-[var(--rule)] rounded-lg p-6 space-y-6 transition-colors">
+          <div class="flex items-center justify-between border-b border-[var(--rule-light)] pb-3">
+            <h2 class="font-serif text-lg font-bold text-[var(--ink)] flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[var(--green)] inline-block"></span>
+              <span>Input Parameters</span>
+            </h2>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--ink-soft)]">Live Recalculation</span>
+          </div>
+
+          <!-- Input fields slot -->
+          <div class="space-y-5">
+            <slot name="inputs" />
+          </div>
+        </div>
+
+        <!-- Secondary Input Slot (for Compare Mode) -->
+        <div id="compare-inputs-container" class="bg-[var(--paper-raised)] border border-[var(--amber)] rounded-lg p-6 space-y-6 transition-colors hidden">
+          <div class="flex items-center justify-between border-b border-[var(--rule-light)] pb-3">
+            <h2 class="font-serif text-lg font-bold text-[var(--ink)] flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[var(--amber)] inline-block"></span>
+              <span>Scenario B Parameters</span>
+            </h2>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--amber)] font-bold">Comparison Mode</span>
+          </div>
+          <div class="space-y-5">
+            <slot name="compare-inputs" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Dark Result Panel -->
+      <div class="lg:col-span-5 space-y-6 sticky top-20">
+        <div class="bg-[var(--green-dark)] text-white border border-[var(--rule)] rounded-lg p-6 shadow-xl transition-all relative overflow-hidden">
+          <div class="text-xs uppercase font-mono tracking-widest text-emerald-200/70 mb-1 flex justify-between items-center">
+            <span>{resultLabel}</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          </div>
+
+          <!-- Signature Hero Result Number -->
+          <div class="my-4 flex items-baseline space-x-2">
+            <span id="hero-result-value" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-white transition-all duration-150">
+              $0.00
+            </span>
+            <span class="text-sm font-mono text-emerald-200/80">{resultSuffix}</span>
+          </div>
+
+          <!-- Compare Mode Result Comparison (Hidden by default) -->
+          <div id="compare-result-box" class="mt-4 pt-4 border-t border-emerald-800/60 hidden">
+            <div class="text-xs font-mono text-amber-300 uppercase tracking-wider mb-1">Scenario B Result</div>
+            <div class="flex items-baseline space-x-2">
+              <span id="compare-result-value" class="font-serif text-3xl font-bold text-amber-200">$0.00</span>
+              <span id="compare-diff-badge" class="text-xs font-mono px-2 py-0.5 rounded bg-amber-900/60 text-amber-300 border border-amber-500/40">Diff: $0.00</span>
+            </div>
+          </div>
+
+          <!-- Breakdown Line Items -->
+          <div class="mt-6 pt-6 border-t border-emerald-800/60 space-y-2.5 text-xs font-mono">
+            <slot name="result-breakdown" />
+          </div>
+
+          <!-- Horizontal Proportion Bar -->
+          <div class="mt-6">
+            <div class="flex justify-between text-[11px] font-mono text-emerald-200/80 mb-1.5">
+              <span id="bar-left-label">Principal</span>
+              <span id="bar-right-label">Interest</span>
+            </div>
+            <div class="w-full h-2.5 bg-emerald-950 rounded-full overflow-hidden flex">
+              <div id="proportion-bar-left" class="h-full bg-[var(--green)] transition-all duration-300" style="width: 70%"></div>
+              <div id="proportion-bar-right" class="h-full bg-[var(--amber)] transition-all duration-300" style="width: 30%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Chart Slot -->
+        <slot name="chart" />
+      </div>
+    </div>
+
+    <!-- Monthly/Annual Amortization Table Slot -->
+    <slot name="table" />
+
+    <!-- Worked Example & Formula Explanation (SEO Content) -->
+    <section class="border-t border-[var(--rule)] pt-12 mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-[var(--ink-soft)]">
+      <div class="space-y-3">
+        <h3 class="font-serif text-xl font-bold text-[var(--ink)]">
+          Formula & Calculation Explanation
+        </h3>
+        <slot name="formula-explanation" />
+      </div>
+
+      <div class="space-y-3 bg-[var(--paper-raised)] p-6 rounded-lg border border-[var(--rule-light)]">
+        <h3 class="font-serif text-xl font-bold text-[var(--ink)]">
+          Worked Example
+        </h3>
+        <slot name="worked-example" />
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script is:inline>
+  // Share Link URL Handler
+  document.getElementById('share-calc-btn')?.addEventListener('click', () => {
+    const params = new URLSearchParams();
+    document.querySelectorAll('input, select').forEach((el) => {
+      if (el.id && el.value !== undefined) {
+        params.set(el.id, el.value);
+      }
+    });
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      const btnText = document.getElementById('share-btn-text');
+      if (btnText) {
+        const orig = btnText.textContent;
+        btnText.textContent = 'Copied!';
+        setTimeout(() => { btnText.textContent = orig; }, 2000);
+      }
+    });
+  });
+
+  // Compare Mode Toggle Handler
+  const compareBtn = document.getElementById('compare-mode-btn');
+  const compareContainer = document.getElementById('compare-inputs-container');
+  const compareResultBox = document.getElementById('compare-result-box');
+
+  compareBtn?.addEventListener('click', () => {
+    const isHidden = compareContainer?.classList.contains('hidden');
+    if (isHidden) {
+      compareContainer?.classList.remove('hidden');
+      compareResultBox?.classList.remove('hidden');
+      compareBtn.classList.add('border-[var(--amber)]', 'bg-[var(--paper)]');
+    } else {
+      compareContainer?.classList.add('hidden');
+      compareResultBox?.classList.add('hidden');
+      compareBtn.classList.remove('border-[var(--amber)]', 'bg-[var(--paper)]');
+    }
+  });
+
+  // Restore URL Query Parameters on Load
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    params.forEach((val, key) => {
+      const el = document.getElementById(key);
+      if (el) {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+  });
+</script>

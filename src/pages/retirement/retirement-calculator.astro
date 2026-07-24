@@ -1,0 +1,166 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+import ScheduleTable from '../../components/ScheduleTable.astro';
+---
+
+<CalculatorShell
+  title="Retirement Calculator"
+  description="Calculate nest egg accumulation and annual retirement drawdowns using the 4% rule."
+  category="Retirement Planning"
+  categoryHref="/#retirement"
+  resultLabel="Total Nest Egg at Retirement"
+  resultSuffix=""
+>
+  <!-- Input Controls -->
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+        <div class="flex justify-between items-center text-xs font-medium">
+          <label for="ret-pv-num" class="text-[var(--ink)]">Current Retirement Savings ($)</label>
+          <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="ret-pv-num" value="50000" min="0" max="2000000" step="5000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        </div>
+        <input type="range" id="ret-pv-slider" value="50000" min="0" max="500000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+      </div>
+      <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+        <div class="flex justify-between items-center text-xs font-medium">
+          <label for="ret-pmt-num" class="text-[var(--ink)]">Monthly Savings Contribution ($)</label>
+          <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="ret-pmt-num" value="1000" min="0" max="15000" step="100" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        </div>
+        <input type="range" id="ret-pmt-slider" value="1000" min="0" max="5000" step="100" class="w-full accent-[var(--green)] cursor-pointer" />
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label for="ret-rate-num" class="block text-[var(--ink-soft)] mb-1">Annual Return (%)</label>
+          <input type="number" id="ret-rate-num" value="7.0" min="0.1" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="ret-yrs-num" class="block text-[var(--ink-soft)] mb-1">Years to Retirement</label>
+          <input type="number" id="ret-yrs-num" value="25" min="1" max="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    
+  </div>
+
+  
+
+  <!-- Result Breakdown -->
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Safe Monthly Income (4% Rule):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Total Contributions:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <!-- Chart -->
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Retirement Calculator Breakdown" />
+  </div>
+
+  <!-- Schedule Table -->
+  <div slot="table">
+    <ScheduleTable id="calc-schedule" title="Retirement Calculator Schedule & Trajectory" />
+  </div>
+
+  <!-- Formula Explanation -->
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Projects total capital accumulation and safe monthly withdrawal rate (4% rule).</p>
+  </div>
+
+  <!-- Worked Example -->
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p class="font-semibold text-[var(--ink)]">Standard Test Case:</p>
+    <p>$50,000 current savings + $1,000 monthly contributions at 7% return over 25 years yields ~$1.1M nest egg.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024 } from '../../scripts/taxData.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+
+  let currentScheduleMode = 'annual';
+  let cachedSchedule: any = null;
+
+  function renderScheduleTable(sched: any) {
+    if (sched) cachedSchedule = sched;
+    if (!cachedSchedule) return;
+
+    const tableContainer = document.getElementById('calc-schedule');
+    if (tableContainer) tableContainer.classList.remove('hidden');
+
+    const tbody = document.getElementById('schedule-table-body');
+    if (!tbody) return;
+
+    const rows = currentScheduleMode === 'annual' ? (cachedSchedule.annual || cachedSchedule.trajectory) : (cachedSchedule.monthly || cachedSchedule.trajectory);
+    if (!rows || rows.length === 0) return;
+
+    tbody.innerHTML = rows.map((r: any) => {
+      const periodLabel = currentScheduleMode === 'annual' ? (r.year ? 'Year ' + r.year : r.dateStr || 'Period ' + r.month) : (r.dateStr || 'Month ' + r.month);
+      const pmtVal = formatCurrency(r.payment || r.contributions || (r.principal + r.interest) || 0);
+      const prinVal = formatCurrency(r.principal || r.contributions || 0);
+      const intVal = formatCurrency(r.interest || 0);
+      const totIntVal = formatCurrency(r.totalInterest || r.interest || 0);
+      const balVal = formatCurrency(r.balance || 0);
+
+      return '<tr class="hover:bg-[var(--paper)] transition-colors border-b border-[var(--rule-light)]">' +
+        '<td class="py-2 px-3">' + periodLabel + '</td>' +
+        '<td class="py-2 px-3 text-right font-medium">' + pmtVal + '</td>' +
+        '<td class="py-2 px-3 text-right text-[var(--green)]">' + prinVal + '</td>' +
+        '<td class="py-2 px-3 text-right text-[var(--amber)]">' + intVal + '</td>' +
+        '<td class="py-2 px-3 text-right">' + totIntVal + '</td>' +
+        '<td class="py-2 px-3 text-right font-semibold">' + balVal + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function update() {
+    try {
+      
+      const pv = parseFloat((document.getElementById('ret-pv-num') as HTMLInputElement)?.value || '50000');
+      const pmt = parseFloat((document.getElementById('ret-pmt-num') as HTMLInputElement)?.value || '1000');
+      const rate = parseFloat((document.getElementById('ret-rate-num') as HTMLInputElement)?.value || '7.0');
+      const yrs = parseInt((document.getElementById('ret-yrs-num') as HTMLInputElement)?.value || '25');
+
+      (document.getElementById('ret-pv-slider') as HTMLInputElement).value = String(pv);
+      (document.getElementById('ret-pmt-slider') as HTMLInputElement).value = String(pmt);
+
+      const res = investmentGrowth(pv, pmt, rate, yrs);
+      const safeMonthly = (res.totalBalance * 0.04) / 12;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(res.totalBalance);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(safeMonthly) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(res.totalContributions);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) renderDonutChart(canvas, ['Contributions', 'Compound Growth'], [res.totalContributions, res.totalInterest]);
+      renderScheduleTable(res);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+
+    document.getElementById('schedule-toggle-annual')?.addEventListener('click', (e) => {
+      currentScheduleMode = 'annual';
+      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      document.getElementById('schedule-toggle-monthly')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      renderScheduleTable(null);
+    });
+
+    document.getElementById('schedule-toggle-monthly')?.addEventListener('click', (e) => {
+      currentScheduleMode = 'monthly';
+      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      document.getElementById('schedule-toggle-annual')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
+      renderScheduleTable(null);
+    });
+
+    update();
+  });
+</script>

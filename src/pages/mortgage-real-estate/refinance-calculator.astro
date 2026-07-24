@@ -1,0 +1,86 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Refinance Calculator"
+  description="Compare existing mortgage terms against a new loan option to calculate monthly savings and break-even timeline."
+  category="Mortgage & Real Estate"
+  categoryHref="/#mortgage-real-estate"
+  resultLabel="Monthly Refinance Savings"
+  resultSuffix="/mo"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Current Loan Balance ($)</label><input type="number" id="cur-balance" value="300000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Current Rate (%)</label><input type="number" id="cur-rate" value="7.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Current Remaining Term (Yrs)</label><input type="number" id="cur-term" value="30" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">New Refinance Rate (%)</label><input type="number" id="new-rate" value="5.5" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">New Loan Term (Yrs)</label><input type="number" id="new-term" value="30" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Refinance Closing Costs ($)</label><input type="number" id="closing-costs" value="4500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Break-Even Timeline:</span><span id="res-p1" class="font-bold text-white">0 months</span></div>
+      <div class="flex justify-between"><span>New Monthly Payment:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Break-even Month = Total Closing Costs / Monthly Payment Reduction.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>Reducing interest rate from 7% to 5.5% on a $300,000 loan saves $300/mo, breaking even on $4,500 closing costs in 15 months.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const curBal = parseFloat(document.getElementById('cur-balance').value || '300000');
+      const curRate = parseFloat(document.getElementById('cur-rate').value || '7.0');
+      const curYears = parseInt(document.getElementById('cur-term').value || '30');
+      const newRate = parseFloat(document.getElementById('new-rate').value || '5.5');
+      const newYears = parseInt(document.getElementById('new-term').value || '30');
+      const closing = parseFloat(document.getElementById('closing-costs').value || '4500');
+
+      const oldPmt = amortizedPayment(curBal, curRate, curYears * 12);
+      const newPmt = amortizedPayment(curBal, newRate, newYears * 12);
+      const monthlySavings = oldPmt - newPmt;
+      const breakEvenMonths = monthlySavings > 0 ? Math.ceil(closing / monthlySavings) : 0;
+
+      document.getElementById('hero-result-value').textContent = formatCurrency(monthlySavings);
+      document.getElementById('res-p1').textContent = breakEvenMonths > 0 ? breakEvenMonths + ' months' : 'N/A';
+      document.getElementById('res-p2').textContent = formatCurrency(newPmt) + '/mo';
+
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) {
+        renderDonutChart(canvas, ['New Payment', 'Monthly Savings'], [newPmt, Math.max(0, monthlySavings)]);
+      }
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

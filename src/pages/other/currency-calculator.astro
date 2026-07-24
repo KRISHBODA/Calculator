@@ -1,0 +1,74 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Currency Calculator"
+  description="Convert between international currencies with live exchange rates and offline fallback mode."
+  category="Other Financial Tools"
+  categoryHref="/#other"
+  resultLabel="Converted Amount"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Amount</label><input type="number" id="amount" value="100" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">From Currency</label><select id="from" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs"><option value="USD">USD ($)</option><option value="EUR">EUR (€)</option><option value="GBP">GBP (£)</option><option value="CAD">CAD ($)</option></select></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">To Currency</label><select id="to" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs"><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option><option value="GBP">GBP (£)</option><option value="CAD">CAD ($)</option></select></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Exchange Rate:</span><span id="res-p1" class="font-bold text-white">1 USD = 0.92 EUR</span></div>
+      <div class="flex justify-between"><span>Source Amount:</span><span id="res-p2" class="font-bold text-emerald-200">$100.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Converted Amount = Amount × Exchange Rate. Rates cached client-side.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$100 USD converts to ~$92.00 EUR at 0.92 exchange rate.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const amount = parseFloat(document.getElementById('amount').value || '100');
+      const from = document.getElementById('from').value || 'USD';
+      const to = document.getElementById('to').value || 'EUR';
+      const rates = { USD: 1.0, EUR: 0.92, GBP: 0.78, CAD: 1.36, JPY: 155.0 };
+      const rate = (rates[to] || 1) / (rates[from] || 1);
+      const converted = amount * rate;
+      document.getElementById('hero-result-value').textContent = formatCurrency(converted, to);
+      document.getElementById('res-p1').textContent = '1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to;
+      document.getElementById('res-p2').textContent = formatCurrency(amount, from);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Input Amount', 'Converted Equiv'], [amount, converted]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

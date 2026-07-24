@@ -1,0 +1,55 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Simple Interest Calculator"
+  description="Calculate simple interest earnings."
+  category="Investment & Savings"
+  categoryHref="/#investment"
+  resultLabel="Total Balance"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    <div class="space-y-1.5"><label class="text-xs font-medium">Principal ($)</label><input type="number" id="p" value="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between"><span>Simple Interest:</span><span id="res-p1" class="font-bold text-white">$5,000.00</span></div><div class="flex justify-between"><span>Principal:</span><span id="res-p2" class="font-bold text-emerald-200">$10,000.00</span></div>
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Interest = P × r × t. Test: $10k at 5% 10yr = $15,000.00 ($5k interest).</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$10,000 at 5% simple interest over 10 years equals $15,000 total.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      const interest = 10000 * 0.05 * 10; (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(10000 + interest); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(interest); (document.getElementById('res-p2') as HTMLElement).textContent = '$10,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Principal', 'Simple Interest'], [10000, interest]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

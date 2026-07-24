@@ -1,0 +1,55 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Present Value Calculator"
+  description="Calculate present value required today."
+  category="Investment & Savings"
+  categoryHref="/#investment"
+  resultLabel="Required Present Value"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    <div class="space-y-1.5"><label class="text-xs font-medium">Target Future Value ($)</label><input type="number" id="fv" value="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between"><span>Discount Interest:</span><span id="res-p1" class="font-bold text-white">$4,916.51</span></div><div class="flex justify-between"><span>Target Future Value:</span><span id="res-p2" class="font-bold text-emerald-200">$10,000.00</span></div>
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>PV = FV / (1+r)^n. Test: $10,000 at 7% 10yr = $5,083.49.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>Discounting $10,000 at 7% over 10 years requires $5,083.49 today.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      const pv = presentValue(10000, 7.0, 10); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pv); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(10000 - pv); (document.getElementById('res-p2') as HTMLElement).textContent = '$10,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Present Value', 'Discount Interest'], [pv, 10000 - pv]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

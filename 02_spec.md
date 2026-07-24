@@ -1,0 +1,3 @@
+check this our compitetor https://www.calculator.net/sitemap.html check all claculator and they give each section same way give to the our calaculator. 
+when you ckeck the each calculator in compitetor website then same way make each calculator and also they give 10 options of each calculator then also in our website gie the 10 options .
+for example you see that in our compitetor website Mortgage calculator they have more option but in our website there limited on Mortgage.

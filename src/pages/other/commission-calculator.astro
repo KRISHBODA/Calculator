@@ -1,0 +1,70 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Commission Calculator"
+  description="Calculate sales commission earnings based on total volume."
+  category="Other Financial Tools"
+  categoryHref="/#other"
+  resultLabel="Total Commission Earned"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Total Sales Volume ($)</label><input type="number" id="sales" value="150000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Commission Rate (%)</label><input type="number" id="rate" value="5.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Net Sales Remainder:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Gross Sales Volume:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Commission = Sales Amount × Commission Rate%.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$150,000 sales volume at 5.0% commission rate earns $7,500.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const sales = parseFloat(document.getElementById('sales').value || '150000');
+      const rate = parseFloat(document.getElementById('rate').value || '5.0');
+      const comm = sales * (rate / 100);
+      document.getElementById('hero-result-value').textContent = formatCurrency(comm);
+      document.getElementById('res-p1').textContent = formatCurrency(sales - comm);
+      document.getElementById('res-p2').textContent = formatCurrency(sales);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Commission Earned', 'Net Sales Remainder'], [comm, sales - comm]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

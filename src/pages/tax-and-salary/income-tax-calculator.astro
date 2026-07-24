@@ -1,0 +1,227 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Income Tax Calculator"
+  description="Calculate federal income tax, state tax, FICA social security/medicare tax, effective rates, and net take-home pay with pre-tax 401k/IRA/HSA deduction options."
+  category="Tax & Salary"
+  categoryHref="/#tax-and-salary"
+  resultLabel="Total Federal Income Tax Owed"
+  resultSuffix="/yr"
+>
+  <!-- Input Controls (10 Options) -->
+  <div slot="inputs" class="space-y-4">
+    <!-- 1. Gross Annual Income -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="tax-gross-num" class="text-[var(--ink)]">1. Gross Annual Income</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="tax-gross-num" value="95000" min="0" max="2000000" step="1000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="tax-gross-slider" value="95000" min="10000" max="500000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- 2. Filing Status -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="filing-status-select" class="text-[var(--ink)]">2. Filing Status</label>
+        <select id="filing-status-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
+          <option value="single" selected>Single</option>
+          <option value="married">Married Filing Jointly</option>
+          <option value="married_sep">Married Filing Separately</option>
+          <option value="head">Head of Household</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 3, 4, 5. Pre-tax Deductions (401k, IRA, HSA) -->
+    <div class="pt-2 space-y-3 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">3-5. Pre-Tax Deductions</div>
+
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label for="deduct-401k" class="block text-[var(--ink-soft)] mb-1">3. 401(k) ($)</label>
+          <input type="number" id="deduct-401k" value="5000" min="0" max="23000" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="deduct-ira" class="block text-[var(--ink-soft)] mb-1">4. Trad IRA ($)</label>
+          <input type="number" id="deduct-ira" value="0" min="0" max="7000" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="deduct-hsa" class="block text-[var(--ink-soft)] mb-1">5. HSA ($)</label>
+          <input type="number" id="deduct-hsa" value="0" min="0" max="4150" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 & 7. Standard vs Itemized Deduction -->
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="flex justify-between items-center">
+        <label for="deduction-type-select" class="font-medium text-[var(--ink)]">6. Deduction Method</label>
+        <select id="deduction-type-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
+          <option value="standard" selected>Standard Deduction</option>
+          <option value="itemized">Itemized Deduction</option>
+        </select>
+      </div>
+      <div id="itemized-input-container" class="hidden flex justify-between items-center pt-1">
+        <label for="itemized-amt" class="text-[var(--ink-soft)]">7. Itemized Deduction Amount ($)</label>
+        <input type="number" id="itemized-amt" value="15000" min="0" step="500" class="w-24 p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 8 & 9. State & Local Tax Rates -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="state-tax-pct" class="block text-[var(--ink-soft)] mb-1">8. State Tax Rate (%)</label>
+        <input type="number" id="state-tax-pct" value="5.0" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="local-tax-pct" class="block text-[var(--ink-soft)] mb-1">9. Local Tax Rate (%)</label>
+        <input type="number" id="local-tax-pct" value="0.0" min="0" max="5" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- 10. Tax Year Selection -->
+    <div class="flex items-center justify-between text-xs">
+      <label for="tax-year-select" class="text-[var(--ink)] font-medium">10. IRS Tax Year</label>
+      <select id="tax-year-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
+        <option value="2024" selected>2024 Tax Brackets</option>
+        <option value="2025">2025 Tax Brackets</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Result Breakdown -->
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between items-center text-emerald-200/90">
+      <span>Taxable Income After Deductions:</span>
+      <span id="tax-breakdown-taxable" class="font-bold text-white">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/80">
+      <span>Federal Effective Tax Rate:</span>
+      <span id="tax-breakdown-rate" class="font-bold">0.0%</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Social Security & Medicare (FICA):</span>
+      <span id="tax-breakdown-fica">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>State & Local Taxes:</span>
+      <span id="tax-breakdown-state">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center pt-2 border-t border-emerald-800/60 font-bold text-emerald-100">
+      <span>Total Annual Tax Liability:</span>
+      <span id="tax-breakdown-total-tax">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1">
+      <span>Annual Take-Home Pay:</span>
+      <span id="tax-breakdown-net" class="font-bold text-white">$0.00</span>
+    </div>
+  </div>
+
+  <!-- Interactive Chart -->
+  <div slot="chart">
+    <ResultChart id="tax-chart" type="donut" title="Gross Income Tax & Take-Home Allocation" />
+  </div>
+
+  <!-- Formula Explanation -->
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Federal tax is calculated progressively after subtracting standard/itemized deductions and pre-tax retirement contributions:</p>
+    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+      Taxable Income = Gross Income - PreTax Deductions - Standard Deduction
+    </div>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p class="font-semibold text-[var(--ink)]">Test Case:</p>
+    <p>Single filer earning $95,000 gross with $5,000 401(k) contribution and standard deduction ($14,600) yields ~$11,800 federal tax (13.9% effective rate).</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { applyProgressiveTax, formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024 } from '../../scripts/taxData.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+
+  function updateIncomeTaxCalculator() {
+    const gross = parseFloat((document.getElementById('tax-gross-num') as HTMLInputElement)?.value || '95000');
+    const status = (document.getElementById('filing-status-select') as HTMLSelectElement)?.value || 'single';
+    const deduct401k = parseFloat((document.getElementById('deduct-401k') as HTMLInputElement)?.value || '0');
+    const deductIra = parseFloat((document.getElementById('deduct-ira') as HTMLInputElement)?.value || '0');
+    const deductHsa = parseFloat((document.getElementById('deduct-hsa') as HTMLInputElement)?.value || '0');
+    const deductType = (document.getElementById('deduction-type-select') as HTMLSelectElement)?.value || 'standard';
+    const itemizedAmt = parseFloat((document.getElementById('itemized-amt') as HTMLInputElement)?.value || '0');
+    const stateRate = parseFloat((document.getElementById('state-tax-pct') as HTMLInputElement)?.value || '5.0');
+    const localRate = parseFloat((document.getElementById('local-tax-pct') as HTMLInputElement)?.value || '0.0');
+
+    // Sync slider
+    (document.getElementById('tax-gross-slider') as HTMLInputElement).value = String(gross);
+
+    // Standard deduction selection
+    let stdDeduction = STANDARD_DEDUCTION_2024.single;
+    if (status === 'married') stdDeduction = STANDARD_DEDUCTION_2024.married_joint;
+    else if (status === 'head') stdDeduction = STANDARD_DEDUCTION_2024.head_of_household;
+
+    const usedDeduction = deductType === 'standard' ? stdDeduction : itemizedAmt;
+    const preTaxTotal = deduct401k + deductIra + deductHsa;
+    const taxableIncome = Math.max(0, gross - preTaxTotal - usedDeduction);
+
+    let brackets = TAX_BRACKETS_2024.single;
+    if (status === 'married') brackets = TAX_BRACKETS_2024.married_joint;
+    else if (status === 'head') brackets = TAX_BRACKETS_2024.head_of_household;
+
+    const taxResult = applyProgressiveTax(taxableIncome, brackets);
+
+    // FICA (Social Security 6.2% up to $168,600 + Medicare 1.45%)
+    const ficaSocial = Math.min(gross, 168600) * 0.062;
+    const ficaMedicare = gross * 0.0145;
+    const ficaTotal = ficaSocial + ficaMedicare;
+
+    const stateTax = gross * (stateRate / 100);
+    const localTax = gross * (localRate / 100);
+    const totalTaxes = taxResult.totalTax + ficaTotal + stateTax + localTax;
+    const netTakeHome = Math.max(0, gross - preTaxTotal - totalTaxes);
+
+    // Update UI
+    (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(taxResult.totalTax);
+    (document.getElementById('tax-breakdown-taxable') as HTMLElement).textContent = formatCurrency(taxableIncome);
+    (document.getElementById('tax-breakdown-rate') as HTMLElement).textContent = formatPercent(taxResult.effectiveRate, 1);
+    (document.getElementById('tax-breakdown-fica') as HTMLElement).textContent = formatCurrency(ficaTotal);
+    (document.getElementById('tax-breakdown-state') as HTMLElement).textContent = formatCurrency(stateTax + localTax);
+    (document.getElementById('tax-breakdown-total-tax') as HTMLElement).textContent = formatCurrency(totalTaxes);
+    (document.getElementById('tax-breakdown-net') as HTMLElement).textContent = formatCurrency(netTakeHome);
+
+    const canvas = document.getElementById('tax-chart') as HTMLCanvasElement;
+    if (canvas) {
+      renderDonutChart(
+        canvas,
+        ['Net Take-Home Pay', 'Federal Income Tax', 'FICA Tax', 'State & Local Tax', 'Pre-Tax Deductions'],
+        [netTakeHome, taxResult.totalTax, ficaTotal, stateTax + localTax, preTaxTotal]
+      );
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputs = ['tax-gross-num', 'tax-gross-slider', 'filing-status-select', 'deduct-401k', 'deduct-ira', 'deduct-hsa', 'deduction-type-select', 'itemized-amt', 'state-tax-pct', 'local-tax-pct', 'tax-year-select'];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updateIncomeTaxCalculator);
+        el.addEventListener('change', updateIncomeTaxCalculator);
+      }
+    });
+
+    document.getElementById('deduction-type-select')?.addEventListener('change', (e) => {
+      const val = (e.target as HTMLSelectElement).value;
+      const itemContainer = document.getElementById('itemized-input-container');
+      if (itemContainer) {
+        if (val === 'itemized') itemContainer.classList.remove('hidden');
+        else itemContainer.classList.add('hidden');
+      }
+    });
+
+    updateIncomeTaxCalculator();
+  });
+</script>

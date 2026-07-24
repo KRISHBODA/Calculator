@@ -1,0 +1,75 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Budget Calculator"
+  description="Track income vs expense categories according to 50/30/20 rule."
+  category="Other Financial Tools"
+  categoryHref="/#other"
+  resultLabel="Net Monthly Surplus / (Deficit)"
+  resultSuffix="/mo"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Gross Income ($)</label><input type="number" id="inc" value="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Essential Needs Expenses ($)</label><input type="number" id="needs" value="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Discretionary Wants ($)</label><input type="number" id="wants" value="1500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Savings / Investments ($)</label><input type="number" id="sav" value="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Total Outgoing Expenses:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Total Monthly Income:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Surplus = Total Income − (Needs + Wants + Savings).</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$5,000 monthly income with $2,500 needs, $1,500 wants, $1,000 savings gives $0 net surplus (balanced budget).</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const inc = parseFloat(document.getElementById('inc').value || '5000');
+      const needs = parseFloat(document.getElementById('needs').value || '2500');
+      const wants = parseFloat(document.getElementById('wants').value || '1500');
+      const sav = parseFloat(document.getElementById('sav').value || '1000');
+      const exp = needs + wants + sav;
+      const surplus = inc - exp;
+      document.getElementById('hero-result-value').textContent = formatCurrency(surplus);
+      document.getElementById('res-p1').textContent = formatCurrency(exp) + '/mo';
+      document.getElementById('res-p2').textContent = formatCurrency(inc) + '/mo';
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Needs (50%)', 'Wants (30%)', 'Savings (20%)'], [needs, wants, sav]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

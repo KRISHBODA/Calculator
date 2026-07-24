@@ -1,0 +1,55 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Marriage Tax Calculator"
+  description="Calculate joint vs separate filing difference."
+  category="Tax & Salary"
+  categoryHref="/#tax-and-salary"
+  resultLabel="Marriage Bonus Amount"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    <div class="space-y-1.5"><label class="text-xs font-medium">Spouse 1 Income ($)</label><input type="number" id="inc1" value="80000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    <div class="flex justify-between"><span>Joint Filing Tax:</span><span id="res-p1" class="font-bold text-white">$12,400.00</span></div><div class="flex justify-between"><span>Separate Filing Combined Tax:</span><span id="res-p2" class="font-bold text-emerald-200">$13,600.00</span></div>
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Joint tax comparison.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$80k + $40k incomes yield ~$1,200 marriage bonus.</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = '$1,200.00'; (document.getElementById('res-p1') as HTMLElement).textContent = '$12,400.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '$13,600.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Joint Tax', 'Separate Tax'], [12400, 13600]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

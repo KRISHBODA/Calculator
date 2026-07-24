@@ -1,0 +1,3 @@
+https://www.calculator.net/cash-back-or-low-interest-calculator.html thia cash back or low interest compare with in our webiste there are only 2 input and compitator website there was so many option of input like that you check every 71 calculator there was same input in our website if there they dont chnage if in compitetor webiste there was more input then do same in our website 
+check the all 71 calculator same input as in our webiste 
+after you check the and compare before give me result check one by one 

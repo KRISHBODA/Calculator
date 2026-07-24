@@ -1,0 +1,71 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Sales Tax Calculator"
+  description="Add sales tax to price or back-calculate pre-tax price."
+  category="Other Financial Tools"
+  categoryHref="/#other"
+  resultLabel="Total Price with Tax"
+  resultSuffix=""
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Pre-Tax Price ($)</label><input type="number" id="price" value="100" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Sales Tax Rate (%)</label><input type="number" id="taxRate" value="8.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Sales Tax Amount:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Pre-Tax Subtotal:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Total = Price × (1 + Tax Rate). Test value: $100 price + 8% tax = $108.00 total.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>$100 price with 8% sales tax results in $108.00 total ($8.00 tax).</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const price = parseFloat(document.getElementById('price').value || '100');
+      const taxRate = parseFloat(document.getElementById('taxRate').value || '8.0');
+      const tax = price * (taxRate / 100);
+      const total = price + tax;
+      document.getElementById('hero-result-value').textContent = formatCurrency(total);
+      document.getElementById('res-p1').textContent = formatCurrency(tax);
+      document.getElementById('res-p2').textContent = formatCurrency(price);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Pre-Tax Price', 'Sales Tax'], [price, tax]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>

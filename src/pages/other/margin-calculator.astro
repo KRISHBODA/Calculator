@@ -1,0 +1,72 @@
+---
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultChart from '../../components/ResultChart.astro';
+---
+
+<CalculatorShell
+  title="Margin Calculator"
+  description="Calculate gross profit margin and markup percentage."
+  category="Other Financial Tools"
+  categoryHref="/#other"
+  resultLabel="Gross Profit Margin"
+  resultSuffix="%"
+>
+  <div slot="inputs" class="space-y-4">
+    
+      <div class="space-y-1.5"><label class="text-xs font-medium">Cost Price ($)</label><input type="number" id="cost" value="60" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium">Selling Price ($)</label><input type="number" id="price" value="100" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    
+  </div>
+
+  <div slot="result-breakdown" class="space-y-2">
+    
+      <div class="flex justify-between"><span>Markup Percentage:</span><span id="res-p1" class="font-bold text-white">0%</span></div>
+      <div class="flex justify-between"><span>Gross Profit ($):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    
+  </div>
+
+  <div slot="chart">
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+  </div>
+
+  <div slot="formula-explanation" class="space-y-2">
+    <p>Margin % = (Price − Cost) / Price × 100. Markup % = (Price − Cost) / Cost × 100.</p>
+  </div>
+
+  <div slot="worked-example" class="space-y-2 text-xs">
+    <p>Selling at $100 with $60 cost gives $40 gross profit (40.0% margin, 66.7% markup).</p>
+  </div>
+</CalculatorShell>
+
+<script>
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+
+  function update() {
+    try {
+      
+      const cost = parseFloat(document.getElementById('cost').value || '60');
+      const price = parseFloat(document.getElementById('price').value || '100');
+      const profit = price - cost;
+      const margin = price > 0 ? (profit / price) * 100 : 0;
+      const markup = cost > 0 ? (profit / cost) * 100 : 0;
+      document.getElementById('hero-result-value').textContent = formatPercent(margin, 1);
+      document.getElementById('res-p1').textContent = formatPercent(markup, 1);
+      document.getElementById('res-p2').textContent = formatCurrency(profit);
+      const canvas = document.getElementById('calc-chart');
+      if (canvas) renderDonutChart(canvas, ['Cost of Goods', 'Gross Profit'], [cost, profit]);
+    
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    });
+    update();
+  });
+</script>
