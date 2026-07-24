@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --ink: #16231D;
+  --ink-soft: #4A554C;
+  --paper: #EEF2ED;
+  --paper-raised: #F7F9F6;
+  --green: #2F6F52;
+  --green-dark: #1E4E38;
+  --amber: #C98A2C;
+  --rule: #C7CBC0;
+  --rule-light: #DBDED4;
+}
+
+html.dark {
+  --ink: #EDEFEA;
+  --ink-soft: #A9B3AB;
+  --paper: #10160F;
+  --paper-raised: #171F16;
+  --green: #5FA985;
+  --green-dark: #0E1A14;
+  --amber: #E3A94A;
+  --rule: #2C362B;
+  --rule-light: #202A1F;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.font-mono-tabular {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,166 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LedgerRow from '../components/LedgerRow.astro';
+
+const categories = [
+  {
+    id: "mortgage-real-estate",
+    title: "Mortgage & Real Estate",
+    description: "Calculators for home buyers, owners, and real estate investors.",
+    calculators: [
+      { title: "Mortgage Calculator", description: "Calculate monthly payment including taxes, insurance, HOA, and PMI.", href: "/mortgage-real-estate/mortgage-calculator" },
+      { title: "Amortization Calculator", description: "View complete monthly and annual loan payoff schedules.", href: "/mortgage-real-estate/amortization-calculator" },
+      { title: "Mortgage Payoff Calculator", description: "Calculate time and interest saved with extra principal payments.", href: "/mortgage-real-estate/mortgage-payoff-calculator" },
+      { title: "House Affordability Calculator", description: "Estimate maximum home purchase price based on your income and DTI.", href: "/mortgage-real-estate/house-affordability-calculator" },
+      { title: "Rent Calculator", description: "Determine recommended monthly rent based on gross income rules.", href: "/mortgage-real-estate/rent-calculator" },
+      { title: "Debt-to-Income Ratio Calculator", description: "Calculate front-end and back-end DTI ratios for loan qualification.", href: "/mortgage-real-estate/debt-to-income-calculator" },
+      { title: "Real Estate Calculator", description: "Analyze capitalization rates (Cap Rate) and Net Operating Income.", href: "/mortgage-real-estate/real-estate-calculator" },
+      { title: "Refinance Calculator", description: "Compare existing loan payments against new rates and closing costs.", href: "/mortgage-real-estate/refinance-calculator" },
+      { title: "Rental Property Calculator", description: "Evaluate NOI, cash-on-cash return, and net monthly property cash flow.", href: "/mortgage-real-estate/rental-property-calculator" },
+      { title: "APR Calculator", description: "Calculate annual percentage rate incorporating loan fees.", href: "/mortgage-real-estate/apr-calculator" },
+      { title: "FHA Loan Calculator", description: "Estimate payments including upfront and annual FHA MIP fees.", href: "/mortgage-real-estate/fha-loan-calculator" },
+      { title: "VA Mortgage Calculator", description: "Calculate VA loan payments and funding fee structures.", href: "/mortgage-real-estate/va-mortgage-calculator" },
+      { title: "Home Equity Loan Calculator", description: "Determine borrowing capacity based on home equity and LTV caps.", href: "/mortgage-real-estate/home-equity-loan-calculator" },
+      { title: "HELOC Calculator", description: "Calculate draw-period interest and repayment-period monthly payments.", href: "/mortgage-real-estate/heloc-calculator" },
+      { title: "Down Payment Calculator", description: "Compare monthly payments across different down payment amounts.", href: "/mortgage-real-estate/down-payment-calculator" },
+      { title: "Rent vs. Buy Calculator", description: "Evaluate long-term cost differences between renting and purchasing.", href: "/mortgage-real-estate/rent-vs-buy-calculator" }
+    ]
+  },
+  {
+    id: "auto",
+    title: "Auto Loans & Leases",
+    description: "Tools for vehicle purchasing, financing, and leasing decisions.",
+    calculators: [
+      { title: "Auto Loan Calculator", description: "Calculate vehicle payments factoring in trade-in, taxes, and fees.", href: "/auto/auto-loan-calculator" },
+      { title: "Cash Back or Low Interest Calculator", description: "Compare cash-back rebates against promotional interest rates.", href: "/auto/cash-back-vs-low-interest-calculator" },
+      { title: "Auto Lease Calculator", description: "Calculate monthly lease payments including depreciation and finance fee.", href: "/auto/auto-lease-calculator" }
+    ]
+  },
+  {
+    id: "investment",
+    title: "Investment & Savings",
+    description: "Formulas for compound growth, yields, present value, and returns.",
+    calculators: [
+      { title: "Interest Calculator", description: "Compare simple vs. compound interest over custom time horizons.", href: "/investment/interest-calculator" },
+      { title: "Investment Calculator", description: "Project future investment values with ongoing regular deposits.", href: "/investment/investment-calculator" },
+      { title: "Finance Calculator (TVM)", description: "General Time-Value-of-Money solver for PV, FV, PMT, rate, or N.", href: "/investment/finance-tvm-calculator" },
+      { title: "Compound Interest Calculator", description: "Calculate returns across daily, monthly, or annual compounding.", href: "/investment/compound-interest-calculator" },
+      { title: "Interest Rate Calculator", description: "Solve effective annual yield required to reach a target future value.", href: "/investment/interest-rate-calculator" },
+      { title: "Savings Calculator", description: "Project wealth accumulation over time with recurring deposits.", href: "/investment/savings-calculator" },
+      { title: "Simple Interest Calculator", description: "Calculate non-compounding interest returns accurately.", href: "/investment/simple-interest-calculator" },
+      { title: "CD Calculator", description: "Compute Certificate of Deposit growth and early withdrawal penalties.", href: "/investment/cd-calculator" },
+      { title: "Bond Calculator", description: "Calculate bond pricing, coupon cash flows, and yield to maturity (YTM).", href: "/investment/bond-calculator" },
+      { title: "Mutual Fund Calculator", description: "Model growth adjusted for annual fund expense ratios.", href: "/investment/mutual-fund-calculator" },
+      { title: "Average Return Calculator", description: "Compare arithmetic mean vs. geometric mean (CAGR) returns.", href: "/investment/average-return-calculator" },
+      { title: "IRR Calculator", description: "Calculate Internal Rate of Return for irregular cash flows.", href: "/investment/irr-calculator" },
+      { title: "ROI Calculator", description: "Measure total return on investment percentage and annualized ROI.", href: "/investment/roi-calculator" },
+      { title: "Payback Period Calculator", description: "Determine months or years needed to recover initial investment.", href: "/investment/payback-period-calculator" },
+      { title: "Present Value Calculator", description: "Calculate current value of a future lump sum discounted by rate.", href: "/investment/present-value-calculator" },
+      { title: "Future Value Calculator", description: "Determine future value of a present sum at a fixed interest rate.", href: "/investment/future-value-calculator" }
+    ]
+  },
+  {
+    id: "retirement",
+    title: "Retirement Planning",
+    description: "Tools for 401(k), IRA, pension, annuity, and Social Security estimates.",
+    calculators: [
+      { title: "Retirement Calculator", description: "Project accumulation phase growth and post-retirement withdrawal life.", href: "/retirement/retirement-calculator" },
+      { title: "401K Calculator", description: "Model employer match rules and IRS annual contribution limits.", href: "/retirement/401k-calculator" },
+      { title: "Pension Calculator", description: "Calculate defined-benefit pension income based on service and salary.", href: "/retirement/pension-calculator" },
+      { title: "Social Security Calculator", description: "Estimate primary insurance amount from AIME and bend points.", href: "/retirement/social-security-calculator" },
+      { title: "Annuity Calculator", description: "Calculate future accumulation for ordinary annuities and annuities due.", href: "/retirement/annuity-calculator" },
+      { title: "Annuity Payout Calculator", description: "Determine recurring payout amounts given a principal lump sum.", href: "/retirement/annuity-payout-calculator" },
+      { title: "Roth IRA Calculator", description: "Model tax-free withdrawal growth for Roth IRA contributions.", href: "/retirement/roth-ira-calculator" },
+      { title: "IRA Calculator", description: "Compare tax-deferred Traditional IRA vs tax-free Roth IRA earnings.", href: "/retirement/ira-calculator" },
+      { title: "RMD Calculator", description: "Determine Required Minimum Distributions via IRS Uniform Lifetime table.", href: "/retirement/rmd-calculator" }
+    ]
+  },
+  {
+    id: "tax-and-salary",
+    title: "Tax & Salary",
+    description: "Calculators for federal brackets, take-home pay, and estate planning.",
+    calculators: [
+      { title: "Income Tax Calculator", description: "Estimate federal income tax owed across progressive brackets.", href: "/tax-and-salary/income-tax-calculator" },
+      { title: "Salary Calculator", description: "Convert between hourly, daily, weekly, monthly, and annual earnings.", href: "/tax-and-salary/salary-calculator" },
+      { title: "Marriage Tax Calculator", description: "Compare joint filing vs. separate filing tax liabilities.", href: "/tax-and-salary/marriage-tax-calculator" },
+      { title: "Estate Tax Calculator", description: "Calculate estate tax liability above federal exemption limits.", href: "/tax-and-salary/estate-tax-calculator" },
+      { title: "Take-Home-Paycheck Calculator", description: "Calculate net pay after federal, state tax, and FICA deductions.", href: "/tax-and-salary/take-home-paycheck-calculator" }
+    ]
+  },
+  {
+    id: "other",
+    title: "Other Financial Calculators",
+    description: "General debt payoff, business, student loan, and shopping calculators.",
+    calculators: [
+      { title: "Loan Calculator", description: "Generic amortized payment solver for any standard loan.", href: "/other/loan-calculator" },
+      { title: "Payment Calculator", description: "Solve for payment given loan size, or solve max loan for target payment.", href: "/other/payment-calculator" },
+      { title: "Currency Calculator", description: "Convert between international currencies using live exchange rates.", href: "/other/currency-calculator" },
+      { title: "Inflation Calculator", description: "Compute purchasing power shifts over time using CPI rates.", href: "/other/inflation-calculator" },
+      { title: "Sales Tax Calculator", description: "Add sales tax to price or back-calculate pre-tax price from total.", href: "/other/sales-tax-calculator" },
+      { title: "Credit Card Calculator", description: "Model payoff time and total interest for fixed or minimum payments.", href: "/other/credit-card-calculator" },
+      { title: "Credit Cards Payoff Calculator", description: "Compare debt avalanche vs. snowball payoff strategies for multiple cards.", href: "/other/credit-cards-payoff-calculator" },
+      { title: "Debt Payoff Calculator", description: "Calculate optimal payoff schedule with custom extra monthly payments.", href: "/other/debt-payoff-calculator" },
+      { title: "Debt Consolidation Calculator", description: "Evaluate savings from consolidating multiple high-interest debts.", href: "/other/debt-consolidation-calculator" },
+      { title: "Repayment Calculator", description: "Compare standard, graduated, and income-driven repayment structures.", href: "/other/repayment-calculator" },
+      { title: "Student Loan Calculator", description: "Calculate monthly payments and income-driven repayment options.", href: "/other/student-loan-calculator" },
+      { title: "College Cost Calculator", description: "Project future tuition costs and required monthly savings target.", href: "/other/college-cost-calculator" },
+      { title: "VAT Calculator", description: "Add or remove Value Added Tax from prices accurately.", href: "/other/vat-calculator" },
+      { title: "Depreciation Calculator", description: "Calculate straight-line, declining balance, and sum-of-years-digits depreciation.", href: "/other/depreciation-calculator" },
+      { title: "Margin Calculator", description: "Calculate gross profit margin, markup percentage, and selling price.", href: "/other/margin-calculator" },
+      { title: "Discount Calculator", description: "Calculate sale prices and total savings from percentage discounts.", href: "/other/discount-calculator" },
+      { title: "Business Loan Calculator", description: "Model commercial financing payments including origination fees.", href: "/other/business-loan-calculator" },
+      { title: "Personal Loan Calculator", description: "Calculate fixed monthly payments for unsecured personal loans.", href: "/other/personal-loan-calculator" },
+      { title: "Boat Loan Calculator", description: "Calculate marine loan amortization schedules over extended terms.", href: "/other/boat-loan-calculator" },
+      { title: "Lease Calculator", description: "Generic commercial or equipment lease payment calculation.", href: "/other/lease-calculator" },
+      { title: "Budget Calculator", description: "Track income vs. expense balance with category breakdown.", href: "/other/budget-calculator" },
+      { title: "Commission Calculator", description: "Calculate flat-rate and tiered sales commission earnings.", href: "/other/commission-calculator" }
+    ]
+  }
+];
+---
+
+<Layout title="Ledger — Financial Calculator Suite (71 Free Tools)">
+  <div class="space-y-12">
+    <!-- Hero Section -->
+    <section class="border-b border-[var(--rule)] pb-8">
+      <div class="max-w-3xl">
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-[var(--ink)] tracking-tight mb-4">
+          Financial precision,<br class="hidden sm:inline" />
+          <span class="text-[var(--green)]">without clutter.</span>
+        </h1>
+        <p class="text-base sm:text-lg text-[var(--ink-soft)] leading-relaxed">
+          71 client-side financial calculators for mortgage, loan payoff, investments, retirement, and taxes. Instant live updates with zero ads or tracking.
+        </p>
+      </div>
+    </section>
+
+    <!-- Category Sections -->
+    <div class="space-y-16">
+      {categories.map((category) => (
+        <section id={category.id} class="scroll-mt-20">
+          <div class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b-2 border-[var(--ink)] pb-3 mb-4">
+            <h2 class="font-serif text-2xl font-bold text-[var(--ink)]">
+              {category.title}
+            </h2>
+            <span class="text-xs font-mono text-[var(--ink-soft)] mt-1 sm:mt-0">
+              {category.calculators.length} calculators
+            </span>
+          </div>
+          <p class="text-xs text-[var(--ink-soft)] mb-6">
+            {category.description}
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+            {category.calculators.map((calc) => (
+              <LedgerRow
+                title={calc.title}
+                description={calc.description}
+                href={calc.href}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+</Layout>

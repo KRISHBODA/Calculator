@@ -1,0 +1,23 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="border-b border-[var(--rule)] bg-[var(--paper)] sticky top-0 z-50 transition-colors">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="/" class="flex items-center space-x-2 group">
+      <span class="font-serif text-xl sm:text-2xl font-bold tracking-tight text-[var(--ink)] group-hover:text-[var(--green)] transition-colors">
+        Ledger
+      </span>
+      <span class="text-xs uppercase tracking-widest px-2 py-0.5 rounded bg-[var(--paper-raised)] text-[var(--ink-soft)] border border-[var(--rule-light)]">
+        Free Calculators
+      </span>
+    </a>
+
+    <nav class="flex items-center space-x-6">
+      <a href="/" class="text-sm font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors">
+        All Calculators
+      </a>
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>

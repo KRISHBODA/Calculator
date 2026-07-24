@@ -1,0 +1,37 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  badge?: string;
+}
+
+const { title, description, href, badge } = Astro.props;
+---
+
+<a
+  href={href}
+  class="group flex items-center justify-between py-4 px-3 border-b border-[var(--rule)] hover:bg-[var(--paper-raised)] transition-all duration-150 rounded-sm"
+>
+  <div class="flex-1 pr-4">
+    <div class="flex items-center space-x-2">
+      <h3 class="font-medium text-[var(--ink)] group-hover:text-[var(--green)] transition-colors">
+        {title}
+      </h3>
+      {badge && (
+        <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[var(--paper-raised)] border border-[var(--rule-light)] text-[var(--ink-soft)]">
+          {badge}
+        </span>
+      )}
+    </div>
+    <p class="text-xs text-[var(--ink-soft)] mt-0.5 line-clamp-1">
+      {description}
+    </p>
+  </div>
+
+  <div class="text-[var(--ink-soft)] group-hover:text-[var(--green)] group-hover:translate-x-1 transition-all duration-150">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+    </svg>
+  </div>
+</a>
