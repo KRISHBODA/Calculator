@@ -5,41 +5,108 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Mutual Fund Calculator"
-  description="Calculate net investment returns minus fees."
+  description="Project mutual fund portfolio growth after accounting for annual expense ratios, front-end sales loads, and recurring deposits."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Net Portfolio Value"
-  resultSuffix=""
+  resultLabel="Net Fund Portfolio Value"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Principal ($)</label><input type="number" id="p" value="50000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="initial-val" class="block text-xs font-semibold text-[var(--ink)]">1. Initial Investment ($)</label>
+      <input type="number" id="initial-val" value="10000" min="500" step="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="monthly-val" class="block text-[var(--ink-soft)] mb-1">Monthly Contribution ($)</label>
+        <input type="number" id="monthly-val" value="250" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="horizon-val" class="block text-[var(--ink-soft)] mb-1">Horizon (Years)</label>
+        <input type="number" id="horizon-val" value="20" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-xs">
+      <div>
+        <label for="return-val" class="block text-[var(--ink-soft)] mb-1">Gross Return (%)</label>
+        <input type="number" id="return-val" value="8.0" min="0" max="30" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="expense-val" class="block text-[var(--ink-soft)] mb-1">Expense Ratio (%)</label>
+        <input type="number" id="expense-val" value="0.65" min="0" max="5" step="0.05" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="load-val" class="block text-[var(--ink-soft)] mb-1">Front Load Fee (%)</label>
+        <input type="number" id="load-val" value="0.0" min="0" max="10" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Net Rate:</span><span id="res-p1" class="font-bold text-white">7.25%</span></div><div class="flex justify-between"><span>Net Earnings:</span><span id="res-p2" class="font-bold text-emerald-200">$50,670.00</span></div>
+    <div class="flex justify-between"><span>Gross Value (Without Fees):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Net Value (After Fees):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Expense Ratio Fees Lost:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Net Annual Return Rate:</span><span id="res-p4">0.0%</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Gross Portfolio vs Fee Drag" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Effective Rate = Gross Return − Expense Ratio.</p>
+    <p>Net Return Rate = Gross Return Rate − Expense Ratio. Initial investment is reduced by front-end load fee if applicable.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$50,000 at 8% return minus 0.75% fee over 10 years.</p>
+    <p>$10,000 initial + $250/mo over 20 years at 8.0% gross return with 0.65% expense ratio yields $165,712 net portfolio ($12,410 lost to fund fees).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const fv = futureValueLumpSum(50000, 7.25, 10, 1); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = '7.25%'; (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fv - 50000); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Principal', 'Net Earnings'], [50000, fv - 50000]);
+      const initial = parseFloat((document.getElementById('initial-val') as HTMLInputElement)?.value || '10000');
+      const monthly = parseFloat((document.getElementById('monthly-val') as HTMLInputElement)?.value || '250');
+      const yrs = parseInt((document.getElementById('horizon-val') as HTMLInputElement)?.value || '20');
+
+      const grossRate = parseFloat((document.getElementById('return-val') as HTMLInputElement)?.value || '8.0');
+      const expRatio = parseFloat((document.getElementById('expense-val') as HTMLInputElement)?.value || '0.65');
+      const frontLoad = parseFloat((document.getElementById('load-val') as HTMLInputElement)?.value || '0.0');
+
+      const netRate = Math.max(0, grossRate - expRatio);
+
+      // Gross Simulation
+      let grossBal = initial;
+      const rGrossMo = (grossRate / 100) / 12;
+      for (let m = 0; m < yrs * 12; m++) {
+        grossBal = (grossBal + monthly) * (1 + rGrossMo);
+      }
+
+      // Net Simulation
+      const netInitial = initial * (1 - frontLoad / 100);
+      let netBal = netInitial;
+      const rNetMo = (netRate / 100) / 12;
+      for (let m = 0; m < yrs * 12; m++) {
+        netBal = (netBal + monthly * (1 - frontLoad / 100)) * (1 + rNetMo);
+      }
+
+      const totalFeeDrag = Math.max(0, grossBal - netBal);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(netBal);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(grossBal);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(netBal);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalFeeDrag);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatPercent(netRate, 2);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Portfolio Value', 'Fees Lost to Expense Ratio'], [netBal, totalFeeDrag]);
+      }
     } catch (err) {
       console.error(err);
     }

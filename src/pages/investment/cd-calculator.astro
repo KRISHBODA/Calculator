@@ -4,42 +4,114 @@ import ResultChart from '../../components/ResultChart.astro';
 ---
 
 <CalculatorShell
-  title="CD Calculator"
-  description="Calculate Certificate of Deposit growth."
+  title="Certificate of Deposit (CD) Calculator"
+  description="Calculate Certificate of Deposit (CD) maturity value, total interest earnings, taxes, and early withdrawal penalties."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="CD Value at Maturity"
-  resultSuffix=""
+  resultLabel="CD Maturity Value"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Deposit ($)</label><input type="number" id="p" value="25000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="deposit-val" class="block text-xs font-semibold text-[var(--ink)]">1. Initial CD Deposit ($)</label>
+      <input type="number" id="deposit-val" value="10000" min="500" step="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="term-months" class="block text-[var(--ink-soft)] mb-1">CD Term</label>
+        <select id="term-months" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="6">6 Months</option>
+          <option value="12" selected>12 Months (1 yr)</option>
+          <option value="24">24 Months (2 yrs)</option>
+          <option value="36">36 Months (3 yrs)</option>
+          <option value="60">60 Months (5 yrs)</option>
+        </select>
+      </div>
+      <div>
+        <label for="apy-val" class="block text-[var(--ink-soft)] mb-1">Interest Rate / APY (%)</label>
+        <input type="number" id="apy-val" value="5.25" min="0.1" max="15" step="0.05" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-xs">
+      <div>
+        <label for="compound-freq" class="block text-[var(--ink-soft)] mb-1">Compounding</label>
+        <select id="compound-freq" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="12" selected>Monthly</option>
+          <option value="365">Daily</option>
+          <option value="1">Annually</option>
+        </select>
+      </div>
+      <div>
+        <label for="tax-rate" class="block text-[var(--ink-soft)] mb-1">Tax Rate (%)</label>
+        <input type="number" id="tax-rate" value="22" min="0" max="50" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="penalty-mos" class="block text-[var(--ink-soft)] mb-1">Penalty (Mos)</label>
+        <input type="number" id="penalty-mos" value="3" min="0" max="12" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Interest:</span><span id="res-p1" class="font-bold text-white">$1,312.50</span></div><div class="flex justify-between"><span>Deposit:</span><span id="res-p2" class="font-bold text-emerald-200">$25,000.00</span></div>
+    <div class="flex justify-between"><span>Gross Interest Earned:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Estimated Tax Liability:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Net Post-Tax Interest:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Early Withdrawal Value (after penalty):</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="CD Maturity Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Compound growth over fixed term.</p>
+    <p>CD Growth = Deposit * (1 + r/n)^(n * t). Tax Liability = Gross Interest * Tax Rate. Early penalty deducts X months of simple interest.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$25,000 12-month CD at 5.25% = $26,312.50.</p>
+    <p>$10,000 in a 12-month CD at 5.25% APY earns $525 gross interest ($410 net after 22% tax).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const fv = futureValueLumpSum(25000, 5.25, 1, 12); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = '$1,312.50'; (document.getElementById('res-p2') as HTMLElement).textContent = '$25,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Deposit', 'Interest'], [25000, 1312.50]);
+      const deposit = parseFloat((document.getElementById('deposit-val') as HTMLInputElement)?.value || '10000');
+      const mos = parseInt((document.getElementById('term-months') as HTMLSelectElement)?.value || '12');
+      const apy = parseFloat((document.getElementById('apy-val') as HTMLInputElement)?.value || '5.25');
+
+      const compoundN = parseInt((document.getElementById('compound-freq') as HTMLSelectElement)?.value || '12');
+      const taxRate = parseFloat((document.getElementById('tax-rate') as HTMLInputElement)?.value || '22');
+      const penaltyMos = parseInt((document.getElementById('penalty-mos') as HTMLInputElement)?.value || '3');
+
+      const tYears = mos / 12;
+      const rDecimal = apy / 100;
+      const ratePerSub = rDecimal / compoundN;
+
+      const maturityVal = deposit * Math.pow(1 + ratePerSub, compoundN * tYears);
+      const grossInterest = Math.max(0, maturityVal - deposit);
+      const taxLiability = grossInterest * (taxRate / 100);
+      const netInterest = Math.max(0, grossInterest - taxLiability);
+
+      // Penalty = 3 months of simple interest
+      const monthlySimpleInterest = (deposit * rDecimal) / 12;
+      const penaltyAmount = monthlySimpleInterest * penaltyMos;
+      const earlyWithdrawalVal = Math.max(deposit, maturityVal - penaltyAmount);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(maturityVal);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(grossInterest);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(taxLiability);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(netInterest);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(earlyWithdrawalVal);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Deposit', 'Net Post-Tax Interest', 'Tax Liability'], [deposit, netInterest, taxLiability]);
+      }
     } catch (err) {
       console.error(err);
     }

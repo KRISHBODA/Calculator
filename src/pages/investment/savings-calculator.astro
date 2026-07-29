@@ -5,41 +5,184 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Savings Calculator"
-  description="Calculate wealth accumulation."
+  description="Calculate your future savings balance or solve for the exact monthly contribution required to reach a specific savings goal."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Total Savings Balance"
-  resultSuffix=""
+  resultLabel="End Savings Balance"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Deposit ($)</label><input type="number" id="pmt" value="300" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <!-- Calculation Mode Selector -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <label for="calc-mode" class="block font-semibold text-[var(--ink)]">Calculate Goal Target</label>
+      <select id="calc-mode" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="end-balance" selected>Calculate End Savings Balance</option>
+        <option value="required-deposit">Calculate Required Monthly Deposit (Goal Solver)</option>
+      </select>
+    </div>
+
+    <!-- Savings Goal Target (Goal Solver Mode) -->
+    <div id="goal-container" class="hidden space-y-1.5 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <label for="goal-target" class="block font-semibold text-[var(--ink)]">Target Savings Goal ($)</label>
+      <input type="number" id="goal-target" value="100000" min="1000" step="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <!-- Initial Deposit -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="initial-val" class="text-[var(--ink)]">Initial Savings Balance ($)</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="initial-val" value="10000" min="0" max="500000" step="1000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="initial-slider" value="10000" min="0" max="100000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- Deposit & Frequency -->
+    <div id="deposit-container" class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="monthly-val" class="block text-[var(--ink-soft)] mb-1">Deposit Amount ($)</label>
+        <input type="number" id="monthly-val" value="300" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="deposit-freq" class="block text-[var(--ink-soft)] mb-1">Deposit Frequency</label>
+        <select id="deposit-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="monthly" selected>Monthly</option>
+          <option value="annually">Annually</option>
+          <option value="biweekly">Bi-weekly (26/yr)</option>
+          <option value="weekly">Weekly (52/yr)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Rate & Term -->
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="apy-val" class="block text-[var(--ink-soft)] mb-1">Interest Rate / APY (%)</label>
+        <input type="number" id="apy-val" value="4.5" min="0.0" max="20.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="yrs-val" class="block text-[var(--ink-soft)] mb-1">Savings Horizon (Years)</label>
+        <input type="number" id="yrs-val" value="10" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- Advanced Compounding & Tax/Inflation -->
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Compounding & Tax Adjustment</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="compound-val" class="block text-[var(--ink-soft)] mb-1">Compounding</label>
+          <select id="compound-val" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+            <option value="12" selected>Monthly</option>
+            <option value="365">Daily</option>
+            <option value="4">Quarterly</option>
+            <option value="1">Annually</option>
+          </select>
+        </div>
+        <div>
+          <label for="tax-val" class="block text-[var(--ink-soft)] mb-1">Tax Rate (%)</label>
+          <input type="number" id="tax-val" value="0" min="0" max="50" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="inflation-val" class="block text-[var(--ink-soft)] mb-1">Inflation (%)</label>
+          <input type="number" id="inflation-val" value="0" min="0" max="15" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Deposits:</span><span id="res-p1" class="font-bold text-white">$36,000.00</span></div><div class="flex justify-between"><span>Interest:</span><span id="res-p2" class="font-bold text-emerald-200">$9,066.00</span></div>
+    <div class="flex justify-between"><span>Initial Deposit:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Recurring Deposits:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Post-Tax Interest Earned:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Purchasing Power (Inflation Adjusted):</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Savings Capital & Interest Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Future value with recurring deposits.</p>
+    <p>End Balance = Initial * (1+r/n)^(n*t) + PMT * (((1+r/n)^(n*t) - 1) / (r/n)). Net interest accounts for marginal tax rate and inflation-adjusted purchasing power.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$300/mo at 4.5% over 10 years = $45,066.</p>
+    <p>$10,000 initial + $300/month at 4.5% APY over 10 years accumulates $57,211 ($46,000 total capital deposits + $11,211 interest).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const fv = futureValueSeries(300, 4.5, 10, 12); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = '$36,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fv - 36000); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Deposits', 'Interest'], [36000, fv - 36000]);
+      const mode = (document.getElementById('calc-mode') as HTMLSelectElement)?.value || 'end-balance';
+      const goalTarget = parseFloat((document.getElementById('goal-target') as HTMLInputElement)?.value || '100000');
+      const initBal = parseFloat((document.getElementById('initial-val') as HTMLInputElement)?.value || '10000');
+      let monthly = parseFloat((document.getElementById('monthly-val') as HTMLInputElement)?.value || '300');
+
+      const freq = (document.getElementById('deposit-freq') as HTMLSelectElement)?.value || 'monthly';
+      const apy = parseFloat((document.getElementById('apy-val') as HTMLInputElement)?.value || '4.5');
+      const yrs = parseInt((document.getElementById('yrs-val') as HTMLInputElement)?.value || '10');
+      const compoundN = parseInt((document.getElementById('compound-val') as HTMLSelectElement)?.value || '12');
+
+      const taxRate = parseFloat((document.getElementById('tax-val') as HTMLInputElement)?.value || '0');
+      const inflation = parseFloat((document.getElementById('inflation-val') as HTMLInputElement)?.value || '0');
+
+      const goalContainer = document.getElementById('goal-container');
+      const depositContainer = document.getElementById('deposit-container');
+
+      if (mode === 'required-deposit') {
+        goalContainer?.classList.remove('hidden');
+        depositContainer?.classList.add('hidden');
+      } else {
+        goalContainer?.classList.add('hidden');
+        depositContainer?.classList.remove('hidden');
+      }
+
+      (document.getElementById('initial-slider') as HTMLInputElement).value = String(initBal);
+
+      const netApy = apy * (1 - taxRate / 100);
+      const rDecimal = netApy / 100;
+      const periodsPerYear = freq === 'monthly' ? 12 : (freq === 'biweekly' ? 26 : (freq === 'weekly' ? 52 : 1));
+      const totalPeriods = yrs * periodsPerYear;
+      const ratePerPeriod = rDecimal / periodsPerYear;
+
+      if (mode === 'required-deposit') {
+        const factor = Math.pow(1 + ratePerPeriod, totalPeriods);
+        const remGoal = Math.max(0, goalTarget - initBal * factor);
+        monthly = ratePerPeriod > 0 ? (remGoal * ratePerPeriod) / (factor - 1) : remGoal / totalPeriods;
+      }
+
+      const totalDeposits = monthly * totalPeriods;
+
+      let balance = initBal;
+      for (let i = 0; i < totalPeriods; i++) {
+        balance = (balance + monthly) * (1 + ratePerPeriod);
+      }
+
+      const grossBalance = mode === 'required-deposit' ? goalTarget : balance;
+      const totalInterest = Math.max(0, grossBalance - initBal - totalDeposits);
+
+      // Inflation adjustment
+      const inflationFactor = Math.pow(1 + inflation / 100, yrs);
+      const realPurchasingPower = grossBalance / inflationFactor;
+
+      if (mode === 'required-deposit') {
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(monthly) + '/' + (freq === 'monthly' ? 'mo' : 'period');
+      } else {
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(grossBalance);
+      }
+
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(initBal);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalDeposits);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterest);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(realPurchasingPower);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Balance', 'Total Deposits', 'Interest Earned'], [initBal, totalDeposits, totalInterest]);
+      }
     } catch (err) {
       console.error(err);
     }

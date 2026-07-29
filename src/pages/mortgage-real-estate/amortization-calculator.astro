@@ -6,7 +6,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
 
 <CalculatorShell
   title="Amortization Calculator"
-  description="Detailed loan amortization schedule with monthly and annual payoff breakdown."
+  description="Detailed loan amortization schedule with monthly and annual payoff breakdown, start dates, and extra payment options."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
   resultLabel="Monthly Payment"
@@ -14,59 +14,93 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
 >
   <!-- Input Controls -->
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
-        <div class="flex justify-between items-center text-xs font-medium">
-          <label for="p-num" class="text-[var(--ink)]">Loan Principal Amount</label>
-          <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="p-num" value="200000" min="5000" max="2000000" step="5000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
-        </div>
-        <input type="range" id="p-slider" value="200000" min="10000" max="1000000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="p-num" class="text-[var(--ink)]">Loan Principal Amount ($)</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="p-num" value="200000" min="5000" max="5000000" step="5000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
       </div>
-      <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
-        <div class="flex justify-between items-center text-xs font-medium">
-          <label for="r-num" class="text-[var(--ink)]">Annual Interest Rate (%)</label>
-          <span class="font-mono text-[var(--ink-soft)]"><input type="number" id="r-num" value="6.0" min="0.1" max="20.0" step="0.1" class="w-16 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /> %</span>
-        </div>
-        <input type="range" id="r-slider" value="6.0" min="0.1" max="15.0" step="0.1" class="w-full accent-[var(--green)] cursor-pointer" />
-      </div>
-      <div class="space-y-1.5">
-        <div class="flex justify-between items-center text-xs font-medium">
-          <label for="yrs-select" class="text-[var(--ink)]">Loan Term</label>
-          <select id="yrs-select" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
-            <option value="30" selected>30 Years (360 mos)</option>
-            <option value="20">20 Years (240 mos)</option>
-            <option value="15">15 Years (180 mos)</option>
-            <option value="10">10 Years (120 mos)</option>
-          </select>
-        </div>
-      </div>
-    
-  </div>
+      <input type="range" id="p-slider" value="200000" min="10000" max="1000000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
 
-  
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="r-num" class="block text-[var(--ink-soft)] mb-1">Annual Interest Rate (%)</label>
+        <input type="number" id="r-num" value="6.0" min="0.1" max="25.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="yrs-select" class="block text-[var(--ink-soft)] mb-1">Loan Term</label>
+        <select id="yrs-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded font-mono">
+          <option value="30" selected>30 Years (360 mos)</option>
+          <option value="25">25 Years (300 mos)</option>
+          <option value="20">20 Years (240 mos)</option>
+          <option value="15">15 Years (180 mos)</option>
+          <option value="10">10 Years (120 mos)</option>
+          <option value="5">5 Years (60 mos)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="border-b border-[var(--rule-light)] pb-3">
+      <label class="block text-xs font-medium text-[var(--ink)] mb-1">Start Date</label>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <select id="start-month" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
+          <option value="1">Jan</option>
+          <option value="2">Feb</option>
+          <option value="3">Mar</option>
+          <option value="4">Apr</option>
+          <option value="5">May</option>
+          <option value="6">Jun</option>
+          <option value="7">Jul</option>
+          <option value="8" selected>Aug</option>
+          <option value="9">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
+        </select>
+        <input type="number" id="start-year" value="2026" min="1990" max="2050" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-right" />
+      </div>
+    </div>
+
+    <div class="pt-2 space-y-2">
+      <label class="text-xs font-semibold text-[var(--ink)]">Optional Extra Payments</label>
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label for="extra-mo" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Extra/mo ($)</label>
+          <input type="number" id="extra-mo" value="0" min="0" step="25" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="extra-yr" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Extra/yr ($)</label>
+          <input type="number" id="extra-yr" value="0" min="0" step="100" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="extra-once" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">One-time ($)</label>
+          <input type="number" id="extra-once" value="0" min="0" step="500" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Result Breakdown -->
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Loan Principal:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Total Interest Paid:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-      <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Outflow:</span><span id="res-p3">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Scheduled Monthly Payment:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Interest Paid:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Payoff Date:</span><span id="res-p3" class="font-bold text-white">-</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Loan Outflow:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <!-- Chart -->
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Amortization Calculator Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Amortization Breakdown" />
   </div>
 
   <!-- Schedule Table -->
   <div slot="table">
-    <ScheduleTable id="calc-schedule" title="Amortization Calculator Schedule & Trajectory" />
+    <ScheduleTable id="calc-schedule" title="Amortization Schedule" />
   </div>
 
   <!-- Formula Explanation -->
   <div slot="formula-explanation" class="space-y-2">
-    <p>M = P[r(1+r)^n]/[(1+r)^n − 1]. Generates complete month-by-month principal and interest reduction schedules.</p>
+    <p>Monthly Payment M = P * [r(1+r)^n] / [(1+r)^n - 1]. Month-by-month principal reduction is calculated by subtracting interest from monthly payment plus extra principal contributions.</p>
   </div>
 
   <!-- Worked Example -->
@@ -77,8 +111,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024 } from '../../scripts/taxData.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
   import { renderDonutChart } from '../../scripts/charts.js';
 
   let currentScheduleMode = 'annual';
@@ -94,49 +127,115 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
     const tbody = document.getElementById('schedule-table-body');
     if (!tbody) return;
 
-    const rows = currentScheduleMode === 'annual' ? (cachedSchedule.annual || cachedSchedule.trajectory) : (cachedSchedule.monthly || cachedSchedule.trajectory);
+    const rows = currentScheduleMode === 'annual' ? cachedSchedule.annual : cachedSchedule.monthly;
     if (!rows || rows.length === 0) return;
 
     tbody.innerHTML = rows.map((r: any) => {
-      const periodLabel = currentScheduleMode === 'annual' ? (r.year ? 'Year ' + r.year : r.dateStr || 'Period ' + r.month) : (r.dateStr || 'Month ' + r.month);
-      const pmtVal = formatCurrency(r.payment || r.contributions || (r.principal + r.interest) || 0);
-      const prinVal = formatCurrency(r.principal || r.contributions || 0);
-      const intVal = formatCurrency(r.interest || 0);
-      const totIntVal = formatCurrency(r.totalInterest || r.interest || 0);
-      const balVal = formatCurrency(r.balance || 0);
-
+      const periodLabel = currentScheduleMode === 'annual' ? 'Year ' + r.year : (r.dateStr || 'Month ' + r.month);
       return '<tr class="hover:bg-[var(--paper)] transition-colors border-b border-[var(--rule-light)]">' +
         '<td class="py-2 px-3">' + periodLabel + '</td>' +
-        '<td class="py-2 px-3 text-right font-medium">' + pmtVal + '</td>' +
-        '<td class="py-2 px-3 text-right text-[var(--green)]">' + prinVal + '</td>' +
-        '<td class="py-2 px-3 text-right text-[var(--amber)]">' + intVal + '</td>' +
-        '<td class="py-2 px-3 text-right">' + totIntVal + '</td>' +
-        '<td class="py-2 px-3 text-right font-semibold">' + balVal + '</td>' +
+        '<td class="py-2 px-3 text-right font-medium">' + formatCurrency(r.payment) + '</td>' +
+        '<td class="py-2 px-3 text-right text-[var(--green)]">' + formatCurrency(r.principal) + '</td>' +
+        '<td class="py-2 px-3 text-right text-[var(--amber)]">' + formatCurrency(r.interest) + '</td>' +
+        '<td class="py-2 px-3 text-right">' + formatCurrency(r.totalInterest) + '</td>' +
+        '<td class="py-2 px-3 text-right font-semibold">' + formatCurrency(r.balance) + '</td>' +
       '</tr>';
     }).join('');
   }
 
   function update() {
     try {
-      
       const p = parseFloat((document.getElementById('p-num') as HTMLInputElement)?.value || '200000');
       const r = parseFloat((document.getElementById('r-num') as HTMLInputElement)?.value || '6.0');
       const yrs = parseInt((document.getElementById('yrs-select') as HTMLSelectElement)?.value || '30');
+      const startMo = parseInt((document.getElementById('start-month') as HTMLSelectElement)?.value || '8');
+      const startYr = parseInt((document.getElementById('start-year') as HTMLInputElement)?.value || '2026');
+
+      const extraMo = parseFloat((document.getElementById('extra-mo') as HTMLInputElement)?.value || '0');
+      const extraYr = parseFloat((document.getElementById('extra-yr') as HTMLInputElement)?.value || '0');
+      const extraOnce = parseFloat((document.getElementById('extra-once') as HTMLInputElement)?.value || '0');
+
       (document.getElementById('p-slider') as HTMLInputElement).value = String(p);
-      (document.getElementById('r-slider') as HTMLInputElement).value = String(r);
 
-      const pmt = amortizedPayment(p, r, yrs * 12);
-      const sched = amortizationSchedule(p, r, yrs * 12);
+      const rateMonthly = (r / 100) / 12;
+      const totalMonths = yrs * 12;
+      const baseMonthlyPmt = rateMonthly > 0 ? amortizedPayment(p, r, totalMonths) : p / totalMonths;
 
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pmt);
-      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(p);
-      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(sched.totalInterest);
-      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(p + sched.totalInterest);
+      let balance = p;
+      let totalInterestPaid = 0;
+      let monthIndex = 0;
+
+      const monthlyRows: any[] = [];
+      const annualRows: any[] = [];
+
+      let currentYearInterest = 0;
+      let currentYearPrincipal = 0;
+      let currentYearPmt = 0;
+
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      while (balance > 0.01 && monthIndex < 600) {
+        monthIndex++;
+        const interestForMonth = balance * rateMonthly;
+
+        let extraPmt = Math.max(0, extraMo);
+        if (monthIndex % 12 === 1) extraPmt += Math.max(0, extraYr);
+        if (monthIndex === 1) extraPmt += Math.max(0, extraOnce);
+
+        const scheduledPmt = baseMonthlyPmt + extraPmt;
+        const maxNeeded = balance + interestForMonth;
+        const actualPmt = Math.min(scheduledPmt, maxNeeded);
+        const principalForMonth = Math.max(0, actualPmt - interestForMonth);
+
+        totalInterestPaid += interestForMonth;
+        balance -= principalForMonth;
+
+        const calMonth = (startMo - 1 + (monthIndex - 1)) % 12;
+        const calYear = startYr + Math.floor((startMo - 1 + (monthIndex - 1)) / 12);
+        const dateStr = `${monthNames[calMonth]} ${calYear}`;
+
+        monthlyRows.push({
+          month: monthIndex,
+          dateStr,
+          payment: actualPmt,
+          principal: principalForMonth,
+          interest: interestForMonth,
+          totalInterest: totalInterestPaid,
+          balance: Math.max(0, balance)
+        });
+
+        currentYearInterest += interestForMonth;
+        currentYearPrincipal += principalForMonth;
+        currentYearPmt += actualPmt;
+
+        if (monthIndex % 12 === 0 || balance <= 0.01) {
+          const yrNum = Math.ceil(monthIndex / 12);
+          annualRows.push({
+            year: yrNum,
+            payment: currentYearPmt,
+            principal: currentYearPrincipal,
+            interest: currentYearInterest,
+            totalInterest: totalInterestPaid,
+            balance: Math.max(0, balance)
+          });
+          currentYearInterest = 0;
+          currentYearPrincipal = 0;
+          currentYearPmt = 0;
+        }
+      }
+
+      const finalDateStr = monthlyRows.length > 0 ? monthlyRows[monthlyRows.length - 1].dateStr : '-';
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(baseMonthlyPmt);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(baseMonthlyPmt);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalInterestPaid);
+      (document.getElementById('res-p3') as HTMLElement).textContent = finalDateStr;
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(p + totalInterestPaid);
 
       const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
-      if (canvas) renderDonutChart(canvas, ['Principal Amount', 'Total Interest'], [p, sched.totalInterest]);
-      renderScheduleTable(sched);
-    
+      if (canvas) renderDonutChart(canvas, ['Principal Amount', 'Total Interest'], [p, totalInterestPaid]);
+      
+      renderScheduleTable({ monthly: monthlyRows, annual: annualRows });
     } catch (err) {
       console.error(err);
     }

@@ -5,72 +5,126 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Refinance Calculator"
-  description="Compare existing mortgage terms against a new loan option to calculate monthly savings and break-even timeline."
+  description="Compare your current mortgage terms against a new refinance offer to calculate monthly payment savings, lifetime interest changes, and break-even timelines."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
-  resultLabel="Monthly Refinance Savings"
+  resultLabel="Monthly Payment Savings"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Current Loan Balance ($)</label><input type="number" id="cur-balance" value="300000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Current Rate (%)</label><input type="number" id="cur-rate" value="7.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Current Remaining Term (Yrs)</label><input type="number" id="cur-term" value="30" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">New Refinance Rate (%)</label><input type="number" id="new-rate" value="5.5" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">New Loan Term (Yrs)</label><input type="number" id="new-term" value="30" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Refinance Closing Costs ($)</label><input type="number" id="closing-costs" value="4500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">1. Existing Mortgage Details</div>
+      <div class="space-y-1.5">
+        <label for="cur-balance" class="block text-xs font-medium text-[var(--ink)]">Current Remaining Balance ($)</label>
+        <input type="number" id="cur-balance" value="300000" min="10000" step="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label for="cur-rate" class="block text-[var(--ink-soft)] mb-1">Current Rate (%)</label>
+          <input type="number" id="cur-rate" value="7.0" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="cur-term" class="block text-[var(--ink-soft)] mb-1">Remaining Term (Yrs)</label>
+          <input type="number" id="cur-term" value="25" min="1" max="30" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">2. New Refinance Loan Details</div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label for="new-rate" class="block text-[var(--ink-soft)] mb-1">New Rate (%)</label>
+          <input type="number" id="new-rate" value="5.5" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="new-term" class="block text-[var(--ink-soft)] mb-1">New Term (Yrs)</label>
+          <select id="new-term" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
+            <option value="30" selected>30 Years</option>
+            <option value="20">20 Years</option>
+            <option value="15">15 Years</option>
+            <option value="10">10 Years</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">3. Closing Costs & Cash Out</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="closing-costs" class="block text-[var(--ink-soft)] mb-1">Refinance Fees ($)</label>
+          <input type="number" id="closing-costs" value="4500" min="0" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="cash-out" class="block text-[var(--ink-soft)] mb-1">Cash Out Amount ($)</label>
+          <input type="number" id="cash-out" value="0" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Break-Even Timeline:</span><span id="res-p1" class="font-bold text-white">0 months</span></div>
-      <div class="flex justify-between"><span>New Monthly Payment:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Current Monthly Payment:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>New Refinance Monthly Payment:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Break-Even Timeline:</span><span id="res-p3" class="font-bold text-white">0 months</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Lifetime Net Savings:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Monthly Payment Comparison" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Break-even Month = Total Closing Costs / Monthly Payment Reduction.</p>
+    <p>Monthly Savings = Current Payment − New Payment. Break-even Timeline = Closing Costs / Monthly Payment Savings. Net Lifetime Savings = Total Remaining Old Outflow − Total New Outflow − Closing Costs.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Reducing interest rate from 7% to 5.5% on a $300,000 loan saves $300/mo, breaking even on $4,500 closing costs in 15 months.</p>
+    <p>Refinancing $300,000 from 7% (25 yrs remaining) to 5.5% (30 yrs) drops payment from $2,120/mo to $1,703/mo (saving $417/mo, breaking even on $4,500 fees in 11 months).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const curBal = parseFloat(document.getElementById('cur-balance').value || '300000');
-      const curRate = parseFloat(document.getElementById('cur-rate').value || '7.0');
-      const curYears = parseInt(document.getElementById('cur-term').value || '30');
-      const newRate = parseFloat(document.getElementById('new-rate').value || '5.5');
-      const newYears = parseInt(document.getElementById('new-term').value || '30');
-      const closing = parseFloat(document.getElementById('closing-costs').value || '4500');
+      const curBal = parseFloat((document.getElementById('cur-balance') as HTMLInputElement)?.value || '300000');
+      const curRate = parseFloat((document.getElementById('cur-rate') as HTMLInputElement)?.value || '7.0');
+      const curYrs = parseInt((document.getElementById('cur-term') as HTMLInputElement)?.value || '25');
 
-      const oldPmt = amortizedPayment(curBal, curRate, curYears * 12);
-      const newPmt = amortizedPayment(curBal, newRate, newYears * 12);
+      const newRate = parseFloat((document.getElementById('new-rate') as HTMLInputElement)?.value || '5.5');
+      const newYrs = parseInt((document.getElementById('new-term') as HTMLSelectElement)?.value || '30');
+
+      const closing = parseFloat((document.getElementById('closing-costs') as HTMLInputElement)?.value || '4500');
+      const cashOut = parseFloat((document.getElementById('cash-out') as HTMLInputElement)?.value || '0');
+
+      const oldPmt = amortizedPayment(curBal, curRate, curYrs * 12);
+      const newLoanBal = curBal + cashOut;
+      const newPmt = amortizedPayment(newLoanBal, newRate, newYrs * 12);
+
       const monthlySavings = oldPmt - newPmt;
       const breakEvenMonths = monthlySavings > 0 ? Math.ceil(closing / monthlySavings) : 0;
 
-      document.getElementById('hero-result-value').textContent = formatCurrency(monthlySavings);
-      document.getElementById('res-p1').textContent = breakEvenMonths > 0 ? breakEvenMonths + ' months' : 'N/A';
-      document.getElementById('res-p2').textContent = formatCurrency(newPmt) + '/mo';
+      const totalOldOutflow = oldPmt * (curYrs * 12);
+      const totalNewOutflow = (newPmt * (newYrs * 12)) + closing;
+      const netLifetimeSavings = totalOldOutflow - totalNewOutflow;
 
-      const canvas = document.getElementById('calc-chart');
+      const breakEvenText = monthlySavings > 0
+        ? `${breakEvenMonths} months (${(breakEvenMonths / 12).toFixed(1)} yrs)`
+        : 'No monthly savings';
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(Math.max(0, monthlySavings));
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(oldPmt) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(newPmt) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = breakEvenText;
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(netLifetimeSavings);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
       if (canvas) {
         renderDonutChart(canvas, ['New Payment', 'Monthly Savings'], [newPmt, Math.max(0, monthlySavings)]);
       }
-    
     } catch (err) {
       console.error(err);
     }

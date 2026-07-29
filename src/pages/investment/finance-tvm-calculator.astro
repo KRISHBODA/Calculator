@@ -5,41 +5,128 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Finance Calculator (TVM Solver)"
-  description="General Time-Value-of-Money solver."
+  description="Universal Time-Value-of-Money (TVM) financial solver to compute Future Value, Present Value, Payment, Interest Rate, or Loan Term."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Future Value (FV)"
+  resultLabel="Solved Financial Target"
   resultSuffix=""
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">PV ($)</label><input type="number" id="pv" value="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="solve-mode" class="block text-xs font-semibold text-[var(--ink)]">Target Variable to Solve For</label>
+      <select id="solve-mode" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="fv" selected>Future Value (FV)</option>
+        <option value="pv">Present Value (PV)</option>
+        <option value="pmt">Periodic Payment (PMT)</option>
+        <option value="rate">Interest Rate (I/Y %)</option>
+        <option value="n">Periods / Term (N)</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div id="pv-container">
+        <label for="pv-input" class="block text-[var(--ink-soft)] mb-1">Present Value (PV $)</label>
+        <input type="number" id="pv-input" value="5000" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div id="fv-container">
+        <label for="fv-input" class="block text-[var(--ink-soft)] mb-1">Future Value (FV $)</label>
+        <input type="number" id="fv-input" value="10000" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-xs">
+      <div id="pmt-container">
+        <label for="pmt-input" class="block text-[var(--ink-soft)] mb-1">PMT ($)</label>
+        <input type="number" id="pmt-input" value="0" step="50" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div id="rate-container">
+        <label for="rate-input" class="block text-[var(--ink-soft)] mb-1">Rate (%)</label>
+        <input type="number" id="rate-input" value="6.0" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div id="n-container">
+        <label for="n-input" class="block text-[var(--ink-soft)] mb-1">Periods N</label>
+        <input type="number" id="n-input" value="10" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Present Value:</span><span id="res-p1" class="font-bold text-white">$5,000.00</span></div><div class="flex justify-between"><span>Growth:</span><span id="res-p2" class="font-bold text-emerald-200">$1,691.13</span></div>
+    <div class="flex justify-between"><span>Present Value (PV):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Future Value (FV):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Periodic Payment (PMT):</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Net Growth:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="TVM Components" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>TVM Solver.</p>
+    <p>Time Value of Money equation: FV + PV*(1+i)^n + PMT*[((1+i)^n - 1) / i] = 0. Solves any single missing financial variable.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>PV $5,000 at 6% over 5 years yields $6,691.13 FV.</p>
+    <p>A $5,000 present value lump sum invested at 6.0% for 10 periods grows to a Future Value of $8,954.24.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const fv = futureValueLumpSum(5000, 6.0, 5, 1); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = '$5,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fv - 5000); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['PV', 'Growth'], [5000, fv - 5000]);
+      const mode = (document.getElementById('solve-mode') as HTMLSelectElement)?.value || 'fv';
+      let pv = parseFloat((document.getElementById('pv-input') as HTMLInputElement)?.value || '5000');
+      let fv = parseFloat((document.getElementById('fv-input') as HTMLInputElement)?.value || '10000');
+      let pmt = parseFloat((document.getElementById('pmt-input') as HTMLInputElement)?.value || '0');
+      let rate = parseFloat((document.getElementById('rate-input') as HTMLInputElement)?.value || '6.0');
+      let n = parseFloat((document.getElementById('n-input') as HTMLInputElement)?.value || '10');
+
+      const rDecimal = rate / 100;
+
+      if (mode === 'fv') {
+        const factor = Math.pow(1 + rDecimal, n);
+        fv = pv * factor + (rDecimal > 0 ? pmt * ((factor - 1) / rDecimal) : pmt * n);
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv);
+      } else if (mode === 'pv') {
+        const factor = Math.pow(1 + rDecimal, n);
+        pv = (fv - (rDecimal > 0 ? pmt * ((factor - 1) / rDecimal) : pmt * n)) / factor;
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pv);
+      } else if (mode === 'pmt') {
+        const factor = Math.pow(1 + rDecimal, n);
+        pmt = rDecimal > 0 ? (fv - pv * factor) * rDecimal / (factor - 1) : (fv - pv) / n;
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pmt);
+      } else if (mode === 'rate') {
+        let low = 0.0001, high = 1.0;
+        for (let i = 0; i < 40; i++) {
+          const mid = (low + high) / 2;
+          const factor = Math.pow(1 + mid, n);
+          const estFV = pv * factor + (mid > 0 ? pmt * ((factor - 1) / mid) : pmt * n);
+          if (estFV < fv) low = mid; else high = mid;
+        }
+        rate = ((low + high) / 2) * 100;
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(rate, 2);
+      } else if (mode === 'n') {
+        if (rDecimal > 0) {
+          n = Math.log((fv * rDecimal + pmt) / (pv * rDecimal + pmt)) / Math.log(1 + rDecimal);
+        } else {
+          n = (fv - pv) / (pmt || 1);
+        }
+        (document.getElementById('hero-result-value') as HTMLElement).textContent = `${n.toFixed(1)} periods`;
+      }
+
+      const totalGrowth = Math.max(0, fv - pv - (pmt * n));
+
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(pv);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fv);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(pmt);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalGrowth);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Present Value (PV)', 'Total Growth / Earnings'], [Math.abs(pv), Math.abs(totalGrowth)]);
+      }
     } catch (err) {
       console.error(err);
     }

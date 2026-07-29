@@ -5,41 +5,123 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Cash Back or Low Interest Calculator"
-  description="Compare cash rebate vs low interest rate auto offers."
+  description="Compare manufacturer cash-back rebates against promotional low-interest rate financing offers to see which option saves you more money."
   category="Auto Loans & Leases"
   categoryHref="/#auto"
-  resultLabel="Better Offer Option"
+  resultLabel="Recommended Offer Option"
   resultSuffix=""
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Vehicle Price ($)</label><input type="number" id="price" value="30000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div><div class="space-y-1.5"><label class="text-xs font-medium">Rebate Amount ($)</label><input type="number" id="rebate" value="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="price" class="block text-xs font-semibold text-[var(--ink)]">1. Vehicle Purchase Price ($)</label>
+      <input type="number" id="price" value="30000" min="5000" step="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="term" class="block text-[var(--ink-soft)] mb-1">Term (Months)</label>
+        <select id="term" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="36">36 Mos (3 yrs)</option>
+          <option value="48">48 Mos (4 yrs)</option>
+          <option value="60" selected>60 Mos (5 yrs)</option>
+          <option value="72">72 Mos (6 yrs)</option>
+        </select>
+      </div>
+      <div>
+        <label for="down" class="block text-[var(--ink-soft)] mb-1">Down ($)</label>
+        <input type="number" id="down" value="2000" min="0" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="tax" class="block text-[var(--ink-soft)] mb-1">Sales Tax (%)</label>
+        <input type="number" id="tax" value="7.0" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Option A: Cash Back Rebate + Standard Rate</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="rebate" class="block text-[var(--ink-soft)] mb-1">Cash Rebate ($)</label>
+          <input type="number" id="rebate" value="2500" min="0" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="std-rate" class="block text-[var(--ink-soft)] mb-1">Standard Rate (%)</label>
+          <input type="number" id="std-rate" value="6.5" min="0" max="25" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Option B: Low Promotional Rate (No Rebate)</div>
+      <div>
+        <label for="promo-rate" class="block text-[var(--ink-soft)] mb-1">Low Promotional Interest Rate (%)</label>
+        <input type="number" id="promo-rate" value="1.9" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Total Cost with Rebate:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div><div class="flex justify-between"><span>Total Cost with Low Rate:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Option A Monthly Payment (Rebate):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Option B Monthly Payment (Low Rate):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Option A Total Outflow:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Option B Total Outflow:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Total Offer Cost Comparison" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Compares Total Cost (Option A: Rebate Applied, Standard Rate) vs (Option B: No Rebate, Low Rate).</p>
+    <p>Option A Financed Amount = Vehicle Price − Down Payment − Rebate Amount + Sales Tax. Option B Financed Amount = Vehicle Price − Down Payment + Sales Tax. Compares total loan payments + down payment.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$2,500 rebate at 6.5% standard rate saves more than 1.9% financing without rebate on a $30k vehicle.</p>
+    <p>For a $30,000 vehicle over 60 months, taking a $2,500 cash rebate at 6.5% standard rate costs $29,910 overall vs $30,410 for 1.9% financing without rebate (Rebate saves $500 total).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const price = parseFloat((document.getElementById('price') as HTMLInputElement)?.value || '30000'); const rebate = parseFloat((document.getElementById('rebate') as HTMLInputElement)?.value || '2500'); const costA = amortizedPayment(price - rebate, 6.5, 60) * 60; const costB = amortizedPayment(price, 1.9, 60) * 60; const rec = costA < costB ? 'Take Cash Rebate' : 'Take Low Rate'; (document.getElementById('hero-result-value') as HTMLElement).textContent = rec; (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(costA); (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(costB); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Rebate Option Cost', 'Low Rate Option Cost'], [costA, costB]);
+      const price = parseFloat((document.getElementById('price') as HTMLInputElement)?.value || '30000');
+      const months = parseInt((document.getElementById('term') as HTMLSelectElement)?.value || '60');
+      const down = parseFloat((document.getElementById('down') as HTMLInputElement)?.value || '2000');
+      const taxPct = parseFloat((document.getElementById('tax') as HTMLInputElement)?.value || '7.0');
+
+      const rebate = parseFloat((document.getElementById('rebate') as HTMLInputElement)?.value || '2500');
+      const stdRate = parseFloat((document.getElementById('std-rate') as HTMLInputElement)?.value || '6.5');
+      const promoRate = parseFloat((document.getElementById('promo-rate') as HTMLInputElement)?.value || '1.9');
+
+      const salesTax = price * (taxPct / 100);
+
+      // Option A: Cash Back applied to loan balance at standard rate
+      const financedA = Math.max(0, price - down - rebate + salesTax);
+      const pmtA = financedA > 0 ? amortizedPayment(financedA, stdRate, months) : 0;
+      const totalOutflowA = (pmtA * months) + down;
+
+      // Option B: Full loan balance at promotional low rate
+      const financedB = Math.max(0, price - down + salesTax);
+      const pmtB = financedB > 0 ? amortizedPayment(financedB, promoRate, months) : 0;
+      const totalOutflowB = (pmtB * months) + down;
+
+      const diff = Math.abs(totalOutflowA - totalOutflowB);
+      const rec = totalOutflowA < totalOutflowB
+        ? `Take Cash Rebate (Saves ${formatCurrency(diff)})`
+        : `Take Low Rate (Saves ${formatCurrency(diff)})`;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = rec;
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(pmtA) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(pmtB) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalOutflowA);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalOutflowB);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Option A Total Outflow (Rebate)', 'Option B Total Outflow (Low Rate)'], [totalOutflowA, totalOutflowB]);
+      }
     } catch (err) {
       console.error(err);
     }

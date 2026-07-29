@@ -5,41 +5,98 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Interest Rate Calculator"
-  description="Solve required annual interest rate."
+  description="Calculate the required annual interest rate / return rate needed to grow an initial investment to a target future goal."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Required Rate"
+  resultLabel="Required Interest Rate (I/Y)"
   resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Starting Principal ($)</label><input type="number" id="pv" value="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="start-val" class="block text-[var(--ink-soft)] mb-1">Starting Principal ($)</label>
+        <input type="number" id="start-val" value="10000" min="100" step="500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="target-val" class="block text-[var(--ink-soft)] mb-1">Target End Value ($)</label>
+        <input type="number" id="target-val" value="25000" min="500" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="yrs-num" class="block text-[var(--ink-soft)] mb-1">Time Horizon (Years)</label>
+        <input type="number" id="yrs-num" value="10" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="contrib-val" class="block text-[var(--ink-soft)] mb-1">Monthly Deposit ($)</label>
+        <input type="number" id="contrib-val" value="50" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Starting Principal:</span><span id="res-p1" class="font-bold text-white">$5,000.00</span></div><div class="flex justify-between"><span>Target Goal:</span><span id="res-p2" class="font-bold text-emerald-200">$10,000.00</span></div>
+    <div class="flex justify-between"><span>Required Annual Rate (I/Y):</span><span id="res-p1" class="font-bold text-white">0.0%</span></div>
+    <div class="flex justify-between"><span>Total Capital Invested:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Interest Needed:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Target Goal Surplus/Deficit:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Capital vs Growth Needed" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>r = (FV/PV)^(1/n) - 1.</p>
+    <p>Interest rate r is solved numerically via bisection solver such that FV = PV*(1+r)^t + PMT*(((1+r)^t - 1)/r).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Growing $5k to $10k in 7 years requires 10.41% APY.</p>
+    <p>Growing $10,000 to $25,000 over 10 years with $50/month deposit requires an effective interest rate of 6.27% per year.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const r = solveRate(5000, 10000, 7); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(r, 2); (document.getElementById('res-p1') as HTMLElement).textContent = '$5,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '$10,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['PV', 'Growth'], [5000, 5000]);
+      const pv = parseFloat((document.getElementById('start-val') as HTMLInputElement)?.value || '10000');
+      const fv = parseFloat((document.getElementById('target-val') as HTMLInputElement)?.value || '25000');
+      const yrs = parseInt((document.getElementById('yrs-num') as HTMLInputElement)?.value || '10');
+      const pmt = parseFloat((document.getElementById('contrib-val') as HTMLInputElement)?.value || '50');
+
+      const totalContribs = pmt * 12 * yrs;
+      const totalCapital = pv + totalContribs;
+      const totalInterestNeeded = Math.max(0, fv - totalCapital);
+
+      // Solve rate numerically using bisection
+      let low = 0.00001;
+      let high = 1.0;
+      const months = yrs * 12;
+
+      for (let i = 0; i < 40; i++) {
+        const mid = (low + high) / 2;
+        const rMo = mid / 12;
+        let bal = pv;
+        for (let m = 0; m < months; m++) {
+          bal = (bal + pmt) * (1 + rMo);
+        }
+        if (bal < fv) low = mid; else high = mid;
+      }
+
+      const solvedRate = ((low + high) / 2) * 100;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(solvedRate, 2);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatPercent(solvedRate, 2);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalCapital);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterestNeeded);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(fv);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Capital', 'Total Deposits', 'Required Interest'], [pv, totalContribs, totalInterestNeeded]);
+      }
     } catch (err) {
       console.error(err);
     }

@@ -5,41 +5,142 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Auto Loan Calculator"
-  description="Calculate monthly auto loan payments."
+  description="Calculate monthly auto loan payments, total interest, sales tax, trade-in equity, and total vehicle cost."
   category="Auto Loans & Leases"
   categoryHref="/#auto"
-  resultLabel="Monthly Auto Payment"
+  resultLabel="Monthly Auto Loan Payment"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Financed Amount ($)</label><input type="number" id="p" value="27000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div><div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="r" value="5.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div><div class="space-y-1.5"><label class="text-xs font-medium">Term (Months)</label><input type="number" id="m" value="60" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="price-num" class="text-[var(--ink)]">Vehicle Purchase Price ($)</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="price-num" value="30000" min="1000" max="200000" step="1000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="price-slider" value="30000" min="5000" max="100000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="term-select" class="block text-[var(--ink-soft)] mb-1">Loan Term</label>
+        <select id="term-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="24">24 Months (2 yrs)</option>
+          <option value="36">36 Months (3 yrs)</option>
+          <option value="48">48 Months (4 yrs)</option>
+          <option value="60" selected>60 Months (5 yrs)</option>
+          <option value="72">72 Months (6 yrs)</option>
+          <option value="84">84 Months (7 yrs)</option>
+        </select>
+      </div>
+      <div>
+        <label for="rate-num" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
+        <input type="number" id="rate-num" value="6.5" min="0.0" max="25.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Down Payment & Trade-in</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="down-pay" class="block text-[var(--ink-soft)] mb-1">Cash Down ($)</label>
+          <input type="number" id="down-pay" value="3000" min="0" step="500" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="trade-val" class="block text-[var(--ink-soft)] mb-1">Trade-in ($)</label>
+          <input type="number" id="trade-val" value="0" min="0" step="500" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="trade-owed" class="block text-[var(--ink-soft)] mb-1">Owed ($)</label>
+          <input type="number" id="trade-owed" value="0" min="0" step="500" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">Taxes & Fees</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="tax-rate" class="block text-[var(--ink-soft)] mb-1">Sales Tax (%)</label>
+          <input type="number" id="tax-rate" value="7.0" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="fees-num" class="block text-[var(--ink-soft)] mb-1">Title & Fees ($)</label>
+          <input type="number" id="fees-num" value="350" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 pt-1">
+        <input type="checkbox" id="roll-fees" checked class="accent-[var(--green)] cursor-pointer" />
+        <label for="roll-fees" class="text-xs text-[var(--ink)] cursor-pointer">Include Sales Tax & Fees in Loan Balance</label>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Financed Principal:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div><div class="flex justify-between"><span>Total Interest:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Net Financed Amount:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Loan Interest:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Sales Tax & Fees:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Vehicle Outflow:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Total Auto Financing Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Amortized loan payment on (Price − Down Payment).</p>
+    <p>Net Financed Amount = Vehicle Price − Cash Down − (Trade Value − Amount Owed) + Taxes & Fees (if rolled in). Monthly Payment M = P * [r(1+r)^n] / [(1+r)^n - 1].</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$30,000 car with $3,000 down at 5% rate for 5 years = $518.96/mo.</p>
+    <p>$30,000 car with $3,000 down, 7% sales tax ($2,100), $350 fees, financed at 6.5% for 60 months = $578.43/mo payment ($29,450 financed).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const p = parseFloat((document.getElementById('p') as HTMLInputElement)?.value || '27000'); const r = parseFloat((document.getElementById('r') as HTMLInputElement)?.value || '5.0'); const m = parseInt((document.getElementById('m') as HTMLInputElement)?.value || '60'); const pmt = amortizedPayment(p, r, m); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pmt); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(p); (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency((pmt*m)-p); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Principal Loan', 'Interest'], [p, (pmt*m)-p]);
+      const price = parseFloat((document.getElementById('price-num') as HTMLInputElement)?.value || '30000');
+      const months = parseInt((document.getElementById('term-select') as HTMLSelectElement)?.value || '60');
+      const rate = parseFloat((document.getElementById('rate-num') as HTMLInputElement)?.value || '6.5');
+
+      const down = parseFloat((document.getElementById('down-pay') as HTMLInputElement)?.value || '3000');
+      const tradeVal = parseFloat((document.getElementById('trade-val') as HTMLInputElement)?.value || '0');
+      const tradeOwed = parseFloat((document.getElementById('trade-owed') as HTMLInputElement)?.value || '0');
+
+      const taxPct = parseFloat((document.getElementById('tax-rate') as HTMLInputElement)?.value || '7.0');
+      const fees = parseFloat((document.getElementById('fees-num') as HTMLInputElement)?.value || '350');
+      const rollFees = (document.getElementById('roll-fees') as HTMLInputElement)?.checked;
+
+      (document.getElementById('price-slider') as HTMLInputElement).value = String(price);
+
+      const netTrade = tradeVal - tradeOwed;
+      const taxableAmount = Math.max(0, price - netTrade);
+      const salesTax = taxableAmount * (taxPct / 100);
+      const totalTaxesFees = salesTax + fees;
+
+      let financed = price - down - netTrade;
+      if (rollFees) {
+        financed += totalTaxesFees;
+      }
+
+      financed = Math.max(0, financed);
+      const monthlyPmt = financed > 0 ? amortizedPayment(financed, rate, months) : 0;
+      const totalInterest = (monthlyPmt * months) - financed;
+      const totalUpfrontPaid = down + (rollFees ? 0 : totalTaxesFees);
+      const totalVehicleCost = (monthlyPmt * months) + totalUpfrontPaid;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(monthlyPmt);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(financed);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalInterest);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalTaxesFees);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalVehicleCost);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Principal Loan', 'Total Interest', 'Sales Tax & Fees', 'Down Payment'], [financed, Math.max(0, totalInterest), totalTaxesFees, down]);
+      }
     } catch (err) {
       console.error(err);
     }

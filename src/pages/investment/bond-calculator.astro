@@ -5,41 +5,112 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Bond Calculator"
-  description="Calculate bond pricing and coupon income."
+  description="Calculate bond pricing, coupon cash flow stream, current yield, and Yield to Maturity (YTM)."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Annual Coupon Income"
-  resultSuffix="/yr"
+  resultLabel="Yield to Maturity (YTM)"
+  resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Par Value ($)</label><input type="number" id="par" value="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="par-val" class="block text-xs font-semibold text-[var(--ink)]">1. Bond Par / Face Value ($)</label>
+      <input type="number" id="par-val" value="1000" min="100" step="100" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="coupon-rate" class="block text-[var(--ink-soft)] mb-1">Coupon Rate (%)</label>
+        <input type="number" id="coupon-rate" value="5.0" min="0.0" max="20.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="yrs-to-mat" class="block text-[var(--ink-soft)] mb-1">Years to Maturity</label>
+        <input type="number" id="yrs-to-mat" value="10" min="1" max="30" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="market-price" class="block text-[var(--ink-soft)] mb-1">Current Market Price ($)</label>
+        <input type="number" id="market-price" value="950" min="100" step="10" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="coupon-freq" class="block text-[var(--ink-soft)] mb-1">Coupon Frequency</label>
+        <select id="coupon-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="2" selected>Semi-Annual (2/yr)</option>
+          <option value="1">Annual (1/yr)</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Par Value:</span><span id="res-p1" class="font-bold text-white">$10,000.00</span></div><div class="flex justify-between"><span>Coupon Rate:</span><span id="res-p2" class="font-bold text-emerald-200">5.0%</span></div>
+    <div class="flex justify-between"><span>Annual Coupon Payment:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Current Yield:</span><span id="res-p2" class="font-bold text-white">0.0%</span></div>
+    <div class="flex justify-between"><span>Total Coupon Cash Flows:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Payout at Maturity:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Bond Payout Components" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Annual Coupon = Par × Coupon Rate.</p>
+    <p>Yield to Maturity YTM is solved numerically where Market Price = sum of discounted coupon payments + discounted face value.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$10,000 par at 5% coupon pays $500/year.</p>
+    <p>A $1,000 par bond with 5% coupon bought at a discount for $950 with 10 years to maturity yields a 5.67% YTM.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = '$500.00'; (document.getElementById('res-p1') as HTMLElement).textContent = '$10,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '5.0%'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Par', 'Coupon'], [10000, 500]);
+      const par = parseFloat((document.getElementById('par-val') as HTMLInputElement)?.value || '1000');
+      const couponRate = parseFloat((document.getElementById('coupon-rate') as HTMLInputElement)?.value || '5.0');
+      const yrs = parseInt((document.getElementById('yrs-to-mat') as HTMLInputElement)?.value || '10');
+
+      const price = parseFloat((document.getElementById('market-price') as HTMLInputElement)?.value || '950');
+      const freq = parseInt((document.getElementById('coupon-freq') as HTMLSelectElement)?.value || '2');
+
+      const annualCoupon = par * (couponRate / 100);
+      const currentYield = price > 0 ? (annualCoupon / price) * 100 : 0;
+      const totalCouponCash = annualCoupon * yrs;
+      const totalPayout = par + totalCouponCash;
+
+      // Solve YTM using bisection
+      let low = 0.0001;
+      let high = 0.5;
+      const periods = yrs * freq;
+      const couponPerPeriod = annualCoupon / freq;
+
+      for (let i = 0; i < 40; i++) {
+        const mid = (low + high) / 2;
+        const rPerPeriod = mid / freq;
+        let pv = 0;
+        for (let t = 1; t <= periods; t++) {
+          pv += couponPerPeriod / Math.pow(1 + rPerPeriod, t);
+        }
+        pv += par / Math.pow(1 + rPerPeriod, periods);
+
+        if (pv > price) low = mid; else high = mid;
+      }
+
+      const ytm = ((low + high) / 2) * 100;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(ytm, 2);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(annualCoupon) + '/yr';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatPercent(currentYield, 2);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalCouponCash);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalPayout);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Bond Par Principal', 'Total Coupon Cash Flows'], [par, totalCouponCash]);
+      }
     } catch (err) {
       console.error(err);
     }

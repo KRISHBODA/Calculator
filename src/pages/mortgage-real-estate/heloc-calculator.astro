@@ -5,58 +5,123 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="HELOC Calculator"
-  description="Calculate interest-only draw payments and fully amortizing repayment period payments for a HELOC."
+  description="Calculate interest-only draw period payments and fully amortizing repayment period monthly payments for a Home Equity Line of Credit (HELOC)."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
-  resultLabel="Repayment Monthly Payment"
+  resultLabel="Repayment Phase Monthly Payment"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Drawn HELOC Balance ($)</label><input type="number" id="draw" value="50000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="rate" value="8.5" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Repayment Term (Years)</label><input type="number" id="repay" value="10" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="value" class="block text-[var(--ink-soft)] mb-1">Home Value ($)</label>
+        <input type="number" id="value" value="400000" min="50000" step="10000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="mortgage" class="block text-[var(--ink-soft)] mb-1">Mortgage Balance ($)</label>
+        <input type="number" id="mortgage" value="200000" min="0" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">1. HELOC Borrowing Details</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="draw" class="block text-[var(--ink-soft)] mb-1">Drawn HELOC Balance ($)</label>
+          <input type="number" id="draw" value="50000" min="1000" step="2500" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="ltv" class="block text-[var(--ink-soft)] mb-1">Max LTV Cap (%)</label>
+          <input type="number" id="ltv" value="80" min="50" max="90" step="5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">2. Draw & Repayment Terms</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="draw-rate" class="block text-[var(--ink-soft)] mb-1">Draw Rate (%)</label>
+          <input type="number" id="draw-rate" value="8.5" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="draw-yrs" class="block text-[var(--ink-soft)] mb-1">Draw Period (Yrs)</label>
+          <select id="draw-yrs" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+            <option value="10" selected>10 Years</option>
+            <option value="5">5 Years</option>
+          </select>
+        </div>
+        <div>
+          <label for="repay-rate" class="block text-[var(--ink-soft)] mb-1">Repay Rate (%)</label>
+          <input type="number" id="repay-rate" value="8.5" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="repay-yrs" class="block text-[var(--ink-soft)] mb-1">Repay Period (Yrs)</label>
+          <select id="repay-yrs" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+            <option value="20">20 Years</option>
+            <option value="15">15 Years</option>
+            <option value="10" selected>10 Years</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Draw Phase Interest-Only Pmt:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Total Line Draw Balance:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Draw Phase Monthly Payment (Interest-Only):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Repayment Phase Monthly Payment (P&I):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Max Allowed Line Limit:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Outflow over Life of HELOC:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Draw vs Repayment Payment Step" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Draw Period: Interest-Only = Balance × (Rate / 12). Repayment Period: Full Amortization.</p>
+    <p>Draw Phase Payment = Balance × (Rate / 12). Repayment Phase Payment = Amortized monthly payment on balance over repayment term months.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Drawing $50,000 at 8.5% costs $354/mo interest-only during draw phase, then $620/mo in 10-yr repayment phase.</p>
+    <p>Drawing $50,000 at 8.5% costs $354/mo interest-only for 10 years, then jumps to $620/mo during the 10-year repayment phase.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const draw = parseFloat(document.getElementById('draw').value || '50000');
-      const rate = parseFloat(document.getElementById('rate').value || '8.5');
-      const repayYrs = parseInt(document.getElementById('repay').value || '10');
-      const drawInterest = (draw * (rate / 100)) / 12;
-      const repayPmt = amortizedPayment(draw, rate, repayYrs * 12);
-      document.getElementById('hero-result-value').textContent = formatCurrency(repayPmt);
-      document.getElementById('res-p1').textContent = formatCurrency(drawInterest) + '/mo';
-      document.getElementById('res-p2').textContent = formatCurrency(draw);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Draw Phase (Interest-Only)', 'Repayment Phase (P&I)'], [drawInterest, repayPmt]);
-    
+      const val = parseFloat((document.getElementById('value') as HTMLInputElement)?.value || '400000');
+      const mortgage = parseFloat((document.getElementById('mortgage') as HTMLInputElement)?.value || '200000');
+      const draw = parseFloat((document.getElementById('draw') as HTMLInputElement)?.value || '50000');
+      const ltvCap = parseFloat((document.getElementById('ltv') as HTMLInputElement)?.value || '80');
+
+      const drawRate = parseFloat((document.getElementById('draw-rate') as HTMLInputElement)?.value || '8.5');
+      const drawYrs = parseInt((document.getElementById('draw-yrs') as HTMLSelectElement)?.value || '10');
+
+      const repayRate = parseFloat((document.getElementById('repay-rate') as HTMLInputElement)?.value || '8.5');
+      const repayYrs = parseInt((document.getElementById('repay-yrs') as HTMLSelectElement)?.value || '10');
+
+      const maxAllowedLine = Math.max(0, (val * (ltvCap / 100)) - mortgage);
+      const drawInterestMonthly = (draw * (drawRate / 100)) / 12;
+      const repayMonthlyPmt = amortizedPayment(draw, repayRate, repayYrs * 12);
+
+      const totalDrawOutflow = drawInterestMonthly * (drawYrs * 12);
+      const totalRepayOutflow = repayMonthlyPmt * (repayYrs * 12);
+      const totalLifeOutflow = totalDrawOutflow + totalRepayOutflow;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(repayMonthlyPmt);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(drawInterestMonthly) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(repayMonthlyPmt) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(maxAllowedLine);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalLifeOutflow);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Interest-Only Draw Phase', 'Repayment Phase P&I'], [drawInterestMonthly, repayMonthlyPmt]);
+      }
     } catch (err) {
       console.error(err);
     }

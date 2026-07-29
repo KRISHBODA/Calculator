@@ -5,41 +5,102 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Average Return Calculator"
-  description="Calculate arithmetic vs geometric CAGR return."
+  description="Compare Arithmetic Mean Return vs Geometric Mean Return (CAGR) for multi-year volatile investment returns."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Geometric CAGR"
+  resultLabel="Geometric Mean (CAGR)"
   resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Year 1 Return (%)</label><input type="number" id="r1" value="20" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="initial-val" class="block text-xs font-semibold text-[var(--ink)]">1. Initial Portfolio Value ($)</label>
+      <input type="number" id="initial-val" value="10000" min="100" step="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">2. Annual Return History (%)</div>
+      <div class="grid grid-cols-5 gap-1.5">
+        <div>
+          <label for="y1" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 1 (%)</label>
+          <input type="number" id="y1" value="15.0" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="y2" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 2 (%)</label>
+          <input type="number" id="y2" value="-10.0" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="y3" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 3 (%)</label>
+          <input type="number" id="y3" value="20.0" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="y4" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 4 (%)</label>
+          <input type="number" id="y4" value="5.0" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="y5" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 5 (%)</label>
+          <input type="number" id="y5" value="-5.0" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Arithmetic Mean:</span><span id="res-p1" class="font-bold text-white">8.33%</span></div><div class="flex justify-between"><span>Volatility Drag:</span><span id="res-p2" class="font-bold text-emerald-200">1.12%</span></div>
+    <div class="flex justify-between"><span>Geometric Mean (CAGR):</span><span id="res-p1" class="font-bold text-emerald-200">0.0%</span></div>
+    <div class="flex justify-between"><span>Arithmetic Mean Return:</span><span id="res-p2" class="font-bold text-white">0.0%</span></div>
+    <div class="flex justify-between"><span>Final Portfolio Value:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total 5-Year Net Profit:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Initial Capital vs Net Gain" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Geometric mean formula.</p>
+    <p>Arithmetic Mean = sum(r_i) / n. Geometric Mean (CAGR) = [product(1 + r_i)]^(1/n) - 1. Geometric mean reflects actual compounding performance.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>+20%, -10%, +15% yields 7.21% CAGR.</p>
+    <p>Returns of +15%, -10%, +20%, +5%, -5% over 5 years produce a 5.00% Arithmetic Mean but a 4.41% Geometric Mean CAGR ($10,000 grows to $12,408).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = '7.21%'; (document.getElementById('res-p1') as HTMLElement).textContent = '8.33%'; (document.getElementById('res-p2') as HTMLElement).textContent = '1.12%'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['CAGR', 'Volatility Drag'], [7.21, 1.12]);
+      const initial = parseFloat((document.getElementById('initial-val') as HTMLInputElement)?.value || '10000');
+      const r1 = parseFloat((document.getElementById('y1') as HTMLInputElement)?.value || '15.0') / 100;
+      const r2 = parseFloat((document.getElementById('y2') as HTMLInputElement)?.value || '-10.0') / 100;
+      const r3 = parseFloat((document.getElementById('y3') as HTMLInputElement)?.value || '20.0') / 100;
+      const r4 = parseFloat((document.getElementById('y4') as HTMLInputElement)?.value || '5.0') / 100;
+      const r5 = parseFloat((document.getElementById('y5') as HTMLInputElement)?.value || '-5.0') / 100;
+
+      const returns = [r1, r2, r3, r4, r5];
+      const sum = returns.reduce((a, b) => a + b, 0);
+      const arithmeticMean = (sum / 5) * 100;
+
+      let product = 1;
+      let balance = initial;
+      returns.forEach(r => {
+        product *= (1 + r);
+        balance *= (1 + r);
+      });
+
+      const geometricMean = (Math.pow(product, 1 / 5) - 1) * 100;
+      const totalProfit = balance - initial;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(geometricMean, 2);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatPercent(geometricMean, 2);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatPercent(arithmeticMean, 2);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(balance);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalProfit);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Capital', 'Net Investment Profit'], [initial, Math.max(0, totalProfit)]);
+      }
     } catch (err) {
       console.error(err);
     }

@@ -5,64 +5,130 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Real Estate Calculator"
-  description="Calculate Net Operating Income (NOI) and Capitalization Rate (Cap Rate) for investment property valuation."
+  description="Analyze Net Operating Income (NOI), Capitalization Rate (Cap Rate), Debt Coverage Ratio (DCR), and Cash-on-Cash Return for investment property acquisition."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
   resultLabel="Capitalization Rate (Cap Rate)"
   resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Property Value ($)</label><input type="number" id="property-value" value="500000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Gross Annual Rental Income ($)</label><input type="number" id="gross-rent" value="48000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Annual Operating Expenses ($)</label><input type="number" id="operating-expenses" value="13000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="property-value" class="block text-xs font-semibold text-[var(--ink)]">1. Property Value / Purchase Price ($)</label>
+      <input type="number" id="property-value" value="500000" min="25000" step="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="gross-rent" class="block text-[var(--ink-soft)] mb-1">Gross Annual Rent ($/yr)</label>
+        <input type="number" id="gross-rent" value="48000" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="vacancy-pct" class="block text-[var(--ink-soft)] mb-1">Vacancy Rate (%)</label>
+        <input type="number" id="vacancy-pct" value="5.0" min="0" max="30" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="border-b border-[var(--rule-light)] pb-3 space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">2. Annual Operating Expenses ($/yr)</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="prop-tax" class="block text-[var(--ink-soft)] mb-0.5">Taxes</label>
+          <input type="number" id="prop-tax" value="6000" min="0" step="250" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="prop-ins" class="block text-[var(--ink-soft)] mb-0.5">Insurance</label>
+          <input type="number" id="prop-ins" value="2500" min="0" step="100" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="prop-maint" class="block text-[var(--ink-soft)] mb-0.5">Maint & Mgmt</label>
+          <input type="number" id="prop-maint" value="4500" min="0" step="250" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">3. Mortgage Financing Details</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="down-pct" class="block text-[var(--ink-soft)] mb-0.5">Down (%)</label>
+          <input type="number" id="down-pct" value="20" min="0" max="100" step="5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="loan-rate" class="block text-[var(--ink-soft)] mb-0.5">Rate (%)</label>
+          <input type="number" id="loan-rate" value="6.5" min="0.1" max="15" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="loan-yrs" class="block text-[var(--ink-soft)] mb-0.5">Term (Yrs)</label>
+          <input type="number" id="loan-yrs" value="30" min="5" max="30" step="5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Net Operating Income (NOI):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Total Operating Expenses:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Effective Gross Income (EGI):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Net Operating Income (NOI):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Annual Mortgage Debt Service:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Annual Pre-Tax Cash Flow:</span><span id="res-p4" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Cash-on-Cash Return:</span><span id="res-p5">0.0%</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Revenue & Outflow Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>NOI = Gross Rental Income − Operating Expenses. Cap Rate = (NOI / Property Value) × 100.</p>
+    <p>NOI = (Gross Rent − Vacancy Loss) − Total Operating Expenses. Cap Rate = (NOI / Property Value) × 100. Cash-on-Cash Return = (Annual Pre-Tax Cash Flow / Down Payment) × 100.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$500,000 property generating $48,000 rent with $13,000 operating expenses yields $35,000 NOI (7.0% Cap Rate).</p>
+    <p>$500,000 property with $48k gross rent, 5% vacancy ($2.4k loss), $13k operating expenses yields $32.6k NOI (6.52% Cap Rate).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
+      const val = parseFloat((document.getElementById('property-value') as HTMLInputElement)?.value || '500000');
+      const grossRent = parseFloat((document.getElementById('gross-rent') as HTMLInputElement)?.value || '48000');
+      const vacancyPct = parseFloat((document.getElementById('vacancy-pct') as HTMLInputElement)?.value || '5.0');
       
-      const value = parseFloat(document.getElementById('property-value').value || '500000');
-      const grossRent = parseFloat(document.getElementById('gross-rent').value || '48000');
-      const expenses = parseFloat(document.getElementById('operating-expenses').value || '13000');
+      const tax = parseFloat((document.getElementById('prop-tax') as HTMLInputElement)?.value || '6000');
+      const ins = parseFloat((document.getElementById('prop-ins') as HTMLInputElement)?.value || '2500');
+      const maint = parseFloat((document.getElementById('prop-maint') as HTMLInputElement)?.value || '4500');
 
-      const noi = grossRent - expenses;
-      const capRate = value > 0 ? (noi / value) * 100 : 0;
+      const downPct = parseFloat((document.getElementById('down-pct') as HTMLInputElement)?.value || '20');
+      const rate = parseFloat((document.getElementById('loan-rate') as HTMLInputElement)?.value || '6.5');
+      const yrs = parseInt((document.getElementById('loan-yrs') as HTMLInputElement)?.value || '30');
 
-      document.getElementById('hero-result-value').textContent = formatPercent(capRate, 2);
-      document.getElementById('res-p1').textContent = formatCurrency(noi) + '/yr';
-      document.getElementById('res-p2').textContent = formatCurrency(expenses) + '/yr';
+      const vacancyLoss = grossRent * (vacancyPct / 100);
+      const egi = grossRent - vacancyLoss;
+      const totalExpenses = tax + ins + maint;
+      const noi = egi - totalExpenses;
+      const capRate = val > 0 ? (noi / val) * 100 : 0;
 
-      const canvas = document.getElementById('calc-chart');
+      const downCash = val * (downPct / 100);
+      const loanAmount = val - downCash;
+      const monthlyPmt = loanAmount > 0 ? amortizedPayment(loanAmount, rate, yrs * 12) : 0;
+      const annualDebtService = monthlyPmt * 12;
+
+      const annualCashFlow = noi - annualDebtService;
+      const cocReturn = downCash > 0 ? (annualCashFlow / downCash) * 100 : 0;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(capRate, 2);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(egi) + '/yr';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(noi) + '/yr';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(annualDebtService) + '/yr';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(annualCashFlow) + '/yr';
+      (document.getElementById('res-p5') as HTMLElement).textContent = formatPercent(cocReturn, 2);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
       if (canvas) {
-        renderDonutChart(canvas, ['Net Operating Income (NOI)', 'Operating Expenses'], [Math.max(0, noi), expenses]);
+        renderDonutChart(canvas, ['Net Operating Income', 'Operating Expenses', 'Vacancy Loss'], [Math.max(0, noi), totalExpenses, vacancyLoss]);
       }
-    
     } catch (err) {
       console.error(err);
     }

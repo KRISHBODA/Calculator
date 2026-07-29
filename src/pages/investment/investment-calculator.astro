@@ -5,41 +5,107 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Investment Calculator"
-  description="Project future investment growth."
+  description="Project long-term wealth accumulation, total compound returns, and portfolio balance from starting capital and recurring deposits."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Future Balance"
-  resultSuffix=""
+  resultLabel="End Investment Balance"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Deposit ($)</label><input type="number" id="pmt" value="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="start-num" class="text-[var(--ink)]">Starting Principal ($)</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="start-num" value="25000" min="0" max="2000000" step="5000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="start-slider" value="25000" min="0" max="200000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="rate-num" class="block text-[var(--ink-soft)] mb-1">Return Rate (%)</label>
+        <input type="number" id="rate-num" value="7.5" min="0.0" max="30.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="years-num" class="block text-[var(--ink-soft)] mb-1">Time Horizon (Yrs)</label>
+        <input type="number" id="years-num" value="20" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="deposit-num" class="block text-[var(--ink-soft)] mb-1">Recurring Deposit ($)</label>
+        <input type="number" id="deposit-num" value="500" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="deposit-freq" class="block text-[var(--ink-soft)] mb-1">Deposit Frequency</label>
+        <select id="deposit-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="monthly" selected>Monthly</option>
+          <option value="annually">Annually</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Contributions:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div><div class="flex justify-between"><span>Interest:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Starting Capital:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Contributions:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Investment Growth:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Portfolio Growth Multiple:</span><span id="res-p4">0.0x</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Portfolio Capital & Growth" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>FV = PV(1+r)^t + PMT × [((1+r)^t − 1)/r].</p>
+    <p>Future Value FV = Principal * (1+r)^t + PMT * [((1+r)^t - 1) / r]. Continuous dollar-cost averaging accelerates compound growth.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$10k initial + $500/mo at 7% over 20 years.</p>
+    <p>$25,000 starting principal + $500/month at 7.5% over 20 years accumulates $362,810 ($145,000 total capital + $217,810 investment returns).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const res = investmentGrowth(10000, 500, 7.0, 20); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(res.totalBalance); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(res.totalContributions); (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(res.totalInterest); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Contributions', 'Interest'], [res.totalContributions, res.totalInterest]);
+      const start = parseFloat((document.getElementById('start-num') as HTMLInputElement)?.value || '25000');
+      const rate = parseFloat((document.getElementById('rate-num') as HTMLInputElement)?.value || '7.5');
+      const yrs = parseInt((document.getElementById('years-num') as HTMLInputElement)?.value || '20');
+      const deposit = parseFloat((document.getElementById('deposit-num') as HTMLInputElement)?.value || '500');
+      const freq = (document.getElementById('deposit-freq') as HTMLSelectElement)?.value || 'monthly';
+
+      (document.getElementById('start-slider') as HTMLInputElement).value = String(start);
+
+      const rDecimal = rate / 100;
+      const n = freq === 'monthly' ? 12 : 1;
+      const totalDeposits = deposit * n * yrs;
+
+      let balance = start;
+      const ratePerPeriod = rDecimal / n;
+      const totalPeriods = yrs * n;
+
+      for (let i = 0; i < totalPeriods; i++) {
+        balance = (balance + deposit) * (1 + ratePerPeriod);
+      }
+
+      const totalCapitalInvested = start + totalDeposits;
+      const totalGrowth = Math.max(0, balance - totalCapitalInvested);
+      const multiple = totalCapitalInvested > 0 ? balance / totalCapitalInvested : 0;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(balance);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(start);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalDeposits);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalGrowth);
+      (document.getElementById('res-p4') as HTMLElement).textContent = `${multiple.toFixed(2)}x`;
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Starting Principal', 'Total Deposits', 'Investment Growth'], [start, totalDeposits, totalGrowth]);
+      }
     } catch (err) {
       console.error(err);
     }

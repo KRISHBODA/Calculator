@@ -5,41 +5,102 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Future Value Calculator"
-  description="Calculate future value of a lump sum."
+  description="Calculate future value (FV) of a present lump sum investment and periodic recurring payments."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Future Value"
-  resultSuffix=""
+  resultLabel="Total Future Value (FV)"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Present Value ($)</label><input type="number" id="pv" value="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="pv-val" class="block text-xs font-semibold text-[var(--ink)]">1. Present Value / Initial Amount ($)</label>
+      <input type="number" id="pv-val" value="10000" min="0" step="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="rate-val" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
+        <input type="number" id="rate-val" value="6.5" min="0.0" max="25" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="yrs-val" class="block text-[var(--ink-soft)] mb-1">Time Horizon (Years)</label>
+        <input type="number" id="yrs-val" value="15" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="pmt-val" class="block text-[var(--ink-soft)] mb-1">Monthly Deposit ($)</label>
+        <input type="number" id="pmt-val" value="200" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="compound-val" class="block text-[var(--ink-soft)] mb-1">Compounding Frequency</label>
+        <select id="compound-val" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="12" selected>Monthly (12/yr)</option>
+          <option value="1">Annually (1/yr)</option>
+          <option value="4">Quarterly (4/yr)</option>
+          <option value="365">Daily (365/yr)</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Growth:</span><span id="res-p1" class="font-bold text-white">$967.15</span></div><div class="flex justify-between"><span>Present Value:</span><span id="res-p2" class="font-bold text-emerald-200">$1,000.00</span></div>
+    <div class="flex justify-between"><span>Present Value Lump Sum:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Monthly Deposits:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Interest Growth:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Future Value (FV):</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Future Value Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>FV = PV × (1+r)^n. Test: $1,000 at 7% 10yr = $1,967.15.</p>
+    <p>Future Value FV = PV * (1+r/n)^(n*t) + PMT * (((1+r/n)^(n*t) - 1) / (r/n)). Multi-variable annuity growth solver.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$1,000 at 7% over 10 years grows to $1,967.15.</p>
+    <p>$10,000 initial + $200/mo at 6.5% interest over 15 years yields $86,723 ($46,000 total capital invested + $40,723 interest growth).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const fv = futureValueLumpSum(1000, 7.0, 10, 1); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(fv - 1000); (document.getElementById('res-p2') as HTMLElement).textContent = '$1,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Present Value', 'Growth'], [1000, fv - 1000]);
+      const pv = parseFloat((document.getElementById('pv-val') as HTMLInputElement)?.value || '10000');
+      const rate = parseFloat((document.getElementById('rate-val') as HTMLInputElement)?.value || '6.5');
+      const yrs = parseInt((document.getElementById('yrs-val') as HTMLInputElement)?.value || '15');
+      const pmt = parseFloat((document.getElementById('pmt-val') as HTMLInputElement)?.value || '200');
+      const compoundN = parseInt((document.getElementById('compound-val') as HTMLSelectElement)?.value || '12');
+
+      const rDecimal = rate / 100;
+      const totalDeposits = pmt * 12 * yrs;
+
+      let fv = pv;
+      const ratePerSub = rDecimal / compoundN;
+      const totalPeriods = yrs * compoundN;
+      const contribPerSub = (pmt * 12) / compoundN;
+
+      for (let i = 0; i < totalPeriods; i++) {
+        fv = (fv + contribPerSub) * (1 + ratePerSub);
+      }
+
+      const totalInterest = Math.max(0, fv - pv - totalDeposits);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(pv);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalDeposits);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterest);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(fv);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Present Value (PV)', 'Monthly Deposits', 'Total Interest Growth'], [pv, totalDeposits, totalInterest]);
+      }
     } catch (err) {
       console.error(err);
     }

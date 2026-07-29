@@ -5,41 +5,120 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Interest Calculator"
-  description="Compare simple vs compound interest."
+  description="Calculate total interest earnings and compound growth with optional recurring contributions and custom compounding frequencies."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Total Value"
-  resultSuffix=""
+  resultLabel="End Balance"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Principal ($)</label><input type="number" id="p" value="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="p-num" class="text-[var(--ink)]">Initial Investment ($)</label>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="p-num" value="10000" min="0" max="1000000" step="1000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+      </div>
+      <input type="range" id="p-slider" value="10000" min="0" max="100000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="rate-num" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
+        <input type="number" id="rate-num" value="6.0" min="0.0" max="30.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="years-num" class="block text-[var(--ink-soft)] mb-1">Term (Years)</label>
+        <input type="number" id="years-num" value="10" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="contrib-num" class="block text-[var(--ink-soft)] mb-1">Additional Contribution ($)</label>
+        <input type="number" id="contrib-num" value="100" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="contrib-freq" class="block text-[var(--ink-soft)] mb-1">Contribution Freq</label>
+        <select id="contrib-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="monthly" selected>Monthly</option>
+          <option value="annually">Annually</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="space-y-1.5 text-xs">
+      <label for="compound-freq" class="block text-[var(--ink-soft)] mb-1">Compounding Frequency</label>
+      <select id="compound-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+        <option value="12" selected>Monthly (12/yr)</option>
+        <option value="4">Quarterly (4/yr)</option>
+        <option value="2">Semi-Annually (2/yr)</option>
+        <option value="1">Annually (1/yr)</option>
+        <option value="365">Daily (365/yr)</option>
+      </select>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Interest Earned:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div><div class="flex justify-between"><span>Principal:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Initial Principal:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Contributions Added:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Interest Earned:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total End Portfolio Value:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Interest & Principal Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Simple vs Compound interest formula.</p>
+    <p>Compound Interest FV = Principal * (1 + r/n)^(n*t) + Contribution Series Growth. Compounding yields exponential wealth growth over time.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$10,000 at 5% over 10 years.</p>
+    <p>$10,000 at 6% interest for 10 years with $100/month contribution accumulates $34,308 total ($10,000 principal + $12,000 contributions + $12,308 interest).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const p = parseFloat((document.getElementById('p') as HTMLInputElement)?.value || '10000'); const fv = futureValueLumpSum(p, 5.0, 10, 12); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(fv - p); (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(p); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Principal', 'Interest'], [p, fv - p]);
+      const p = parseFloat((document.getElementById('p-num') as HTMLInputElement)?.value || '10000');
+      const r = parseFloat((document.getElementById('rate-num') as HTMLInputElement)?.value || '6.0');
+      const yrs = parseInt((document.getElementById('years-num') as HTMLInputElement)?.value || '10');
+
+      const contrib = parseFloat((document.getElementById('contrib-num') as HTMLInputElement)?.value || '100');
+      const contribFreq = (document.getElementById('contrib-freq') as HTMLSelectElement)?.value || 'monthly';
+      const compoundN = parseInt((document.getElementById('compound-freq') as HTMLSelectElement)?.value || '12');
+
+      (document.getElementById('p-slider') as HTMLInputElement).value = String(p);
+
+      const rDecimal = r / 100;
+      const contribPerYear = contribFreq === 'monthly' ? 12 : 1;
+      const totalContribs = contrib * contribPerYear * yrs;
+
+      // Compound growth simulation
+      let balance = p;
+      const ratePerSubPeriod = rDecimal / compoundN;
+      const subPeriods = yrs * compoundN;
+      const contribPerSubPeriod = (contrib * contribPerYear) / compoundN;
+
+      for (let i = 0; i < subPeriods; i++) {
+        balance = (balance + contribPerSubPeriod) * (1 + ratePerSubPeriod);
+      }
+
+      const totalInterest = Math.max(0, balance - p - totalContribs);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(balance);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(p);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalContribs);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterest);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(balance);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Principal', 'Total Contributions', 'Interest Earned'], [p, totalContribs, totalInterest]);
+      }
     } catch (err) {
       console.error(err);
     }

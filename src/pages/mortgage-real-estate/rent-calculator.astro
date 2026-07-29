@@ -5,62 +5,122 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Rent Calculator"
-  description="Calculate recommended monthly rent based on the 30% gross monthly income rule of thumb."
+  description="Calculate recommended monthly rent based on your income, pay frequency, debts, and standard budgeting rules (30% rule, 28%/36% conventional rule, 50/30/20 rule)."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
-  resultLabel="Recommended Max Rent"
+  resultLabel="Recommended Max Monthly Rent"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Gross Annual Income ($)</label><input type="number" id="annual-income" value="80000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Target Income Ratio (%)</label><input type="number" id="rent-ratio" value="30" min="15" max="50" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="income-amount" class="block text-[var(--ink)] font-medium mb-1">Gross Income ($)</label>
+        <input type="number" id="income-amount" value="80000" min="1000" step="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="pay-freq" class="block text-[var(--ink)] font-medium mb-1">Pay Frequency</label>
+        <select id="pay-freq" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+          <option value="annual" selected>Annual</option>
+          <option value="monthly">Monthly</option>
+          <option value="biweekly">Bi-weekly (26/yr)</option>
+          <option value="weekly">Weekly (52/yr)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="monthly-debts" class="text-[var(--ink)]">Monthly Debt Payments ($/mo)</label>
+        <input type="number" id="monthly-debts" value="400" min="0" step="50" class="w-28 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <span class="text-[10px] text-[var(--ink-soft)]">Car loans, student loans, minimum credit card payments.</span>
+    </div>
+
+    <div class="space-y-1.5 text-xs">
+      <label for="budget-rule" class="block text-[var(--ink)] font-medium mb-1">Budgeting Method / Rule</label>
+      <select id="budget-rule" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="30" selected>30% Gross Income Rule (Standard)</option>
+        <option value="28">28%/36% Conventional Lender Rule (Includes Debts)</option>
+        <option value="50">50/30/20 Rule (30% Needs Portion)</option>
+        <option value="custom">Custom Percentage Target</option>
+      </select>
+    </div>
+
+    <div id="custom-pct-container" class="hidden space-y-1 text-xs">
+      <label for="custom-pct" class="text-[var(--ink-soft)]">Custom Target Rent Ratio (%)</label>
+      <input type="number" id="custom-pct" value="25" min="10" max="60" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Gross Monthly Income:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Income Left for Other Spending:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Gross Monthly Income:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>30% Rule Max Rent:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>28%/36% Rule Max Rent:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Remaining Income After Rent & Debts:</span><span id="res-p4" class="font-bold text-gray-300">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Monthly Income Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Recommended Rent = (Gross Annual Income / 12) × Target Rent Ratio (default 30%).</p>
+    <p>30% Rule: Rent cap = Gross Monthly Income × 30%. 28%/36% Rule: Rent cap = min(Gross Income × 28%, Gross Income × 36% − Monthly Debts).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>For an $80,000 annual salary, 30% maximum rule suggests a monthly rent cap of $2,000/month.</p>
+    <p>For an $80,000 annual salary ($6,667/mo) with $400 monthly debts, the 30% rule cap is $2,000/mo, while the 28%/36% rule cap is $1,867/mo.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const income = parseFloat(document.getElementById('annual-income').value || '80000');
-      const ratio = parseFloat(document.getElementById('rent-ratio').value || '30');
-      const grossMonthly = income / 12;
-      const maxRent = grossMonthly * (ratio / 100);
-      const remaining = grossMonthly - maxRent;
+      const rawIncome = parseFloat((document.getElementById('income-amount') as HTMLInputElement)?.value || '80000');
+      const freq = (document.getElementById('pay-freq') as HTMLSelectElement)?.value || 'annual';
+      const debts = parseFloat((document.getElementById('monthly-debts') as HTMLInputElement)?.value || '400');
+      const rule = (document.getElementById('budget-rule') as HTMLSelectElement)?.value || '30';
+      const customPct = parseFloat((document.getElementById('custom-pct') as HTMLInputElement)?.value || '25');
 
-      document.getElementById('hero-result-value').textContent = formatCurrency(maxRent);
-      document.getElementById('res-p1').textContent = formatCurrency(grossMonthly) + '/mo';
-      document.getElementById('res-p2').textContent = formatCurrency(remaining) + '/mo';
-
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) {
-        renderDonutChart(canvas, ['Recommended Rent', 'Other Income / Expenses'], [maxRent, remaining]);
+      const customContainer = document.getElementById('custom-pct-container');
+      if (rule === 'custom') {
+        customContainer?.classList.remove('hidden');
+      } else {
+        customContainer?.classList.add('hidden');
       }
-    
+
+      let grossMonthly = rawIncome;
+      if (freq === 'annual') grossMonthly = rawIncome / 12;
+      else if (freq === 'biweekly') grossMonthly = (rawIncome * 26) / 12;
+      else if (freq === 'weekly') grossMonthly = (rawIncome * 52) / 12;
+
+      let targetRatio = 30;
+      if (rule === '28') targetRatio = 28;
+      else if (rule === '50') targetRatio = 25; // 50% needs, ~half to housing
+      else if (rule === 'custom') targetRatio = customPct;
+
+      const rule30Rent = grossMonthly * 0.30;
+      const rule28Cap = grossMonthly * 0.28;
+      const rule36Cap = Math.max(0, (grossMonthly * 0.36) - debts);
+      const rule28_36Rent = Math.min(rule28Cap, rule36Cap);
+
+      let recommendedRent = grossMonthly * (targetRatio / 100);
+      if (rule === '28') recommendedRent = rule28_36Rent;
+
+      const remainingIncome = Math.max(0, grossMonthly - recommendedRent - debts);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(recommendedRent);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(grossMonthly) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(rule30Rent) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(rule28_36Rent) + '/mo';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(remainingIncome) + '/mo';
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Max Rent', 'Monthly Debts', 'Remaining Income'], [recommendedRent, debts, remainingIncome]);
+      }
     } catch (err) {
       console.error(err);
     }

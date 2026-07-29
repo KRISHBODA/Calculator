@@ -5,41 +5,86 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Payback Period Calculator"
-  description="Calculate investment payback time."
+  description="Calculate simple payback period and discounted payback period accounting for cost of capital."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Payback Period"
-  resultSuffix="years"
+  resultLabel="Simple Payback Period"
+  resultSuffix=""
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Investment ($)</label><input type="number" id="inv" value="50000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="inv-val" class="block text-xs font-semibold text-[var(--ink)]">1. Initial Capital Outlay ($)</label>
+      <input type="number" id="inv-val" value="100000" min="1000" step="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="inflow-val" class="block text-[var(--ink-soft)] mb-1">Annual Cash Inflow ($/yr)</label>
+        <input type="number" id="inflow-val" value="25000" min="500" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="discount-val" class="block text-[var(--ink-soft)] mb-1">Discount Rate (%)</label>
+        <input type="number" id="discount-val" value="8.0" min="0" max="30" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Outlay:</span><span id="res-p1" class="font-bold text-white">$50,000.00</span></div><div class="flex justify-between"><span>Annual Inflow:</span><span id="res-p2" class="font-bold text-emerald-200">$12,500.00</span></div>
+    <div class="flex justify-between"><span>Simple Payback Period:</span><span id="res-p1" class="font-bold text-white">0.0 years</span></div>
+    <div class="flex justify-between"><span>Discounted Payback Period:</span><span id="res-p2" class="font-bold text-emerald-200">0.0 years</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Annual Outflow Recovery Rate:</span><span id="res-p3">0.0%</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Initial Outlay vs Annual Inflow" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Payback = Investment / Annual Cash Flow.</p>
+    <p>Simple Payback = Initial Outlay / Annual Cash Inflow. Discounted Payback accounts for time value of money by discounting annual inflows by (1+r)^t.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$50,000 investment returning $12,500/year pays back in 4.0 years.</p>
+    <p>$100,000 outlay with $25,000 annual inflow recovers initial capital in 4.0 years simple payback (5.0 years discounted payback at 8% cost of capital).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = '4.0 yrs'; (document.getElementById('res-p1') as HTMLElement).textContent = '$50,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '$12,500.00/yr'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Outlay', 'Annual Flow'], [50000, 12500]);
+      const inv = parseFloat((document.getElementById('inv-val') as HTMLInputElement)?.value || '100000');
+      const inflow = parseFloat((document.getElementById('inflow-val') as HTMLInputElement)?.value || '25000');
+      const rDecimal = parseFloat((document.getElementById('discount-val') as HTMLInputElement)?.value || '8.0') / 100;
+
+      const simpleYrs = inflow > 0 ? inv / inflow : 0;
+
+      // Discounted Payback Calculation
+      let cumPV = 0;
+      let discYrs = 0;
+      for (let yr = 1; yr <= 50; yr++) {
+        const pvInflow = inflow / Math.pow(1 + rDecimal, yr);
+        if (cumPV + pvInflow >= inv) {
+          const remNeeded = inv - cumPV;
+          discYrs = (yr - 1) + (remNeeded / pvInflow);
+          break;
+        }
+        cumPV += pvInflow;
+        discYrs = yr;
+      }
+
+      const recoveryRate = inv > 0 ? (inflow / inv) * 100 : 0;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = `${simpleYrs.toFixed(1)} years`;
+      (document.getElementById('res-p1') as HTMLElement).textContent = `${simpleYrs.toFixed(1)} years`;
+      (document.getElementById('res-p2') as HTMLElement).textContent = `${discYrs.toFixed(1)} years`;
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatPercent(recoveryRate, 1);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Capital Outlay', 'Annual Cash Inflow'], [inv, inflow]);
+      }
     } catch (err) {
       console.error(err);
     }

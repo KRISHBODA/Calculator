@@ -5,62 +5,130 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Rental Property Calculator"
-  description="Calculate NOI, cap rate, cash-on-cash return, and monthly net cash flow."
+  description="Calculate Net Operating Income (NOI), Cap Rate, Cash-on-Cash Return, and monthly net cash flow for rental property investments."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
   resultLabel="Cash-on-Cash Return"
   resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Purchase Price ($)</label><input type="number" id="price" value="300000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Total Cash Invested / Down Payment ($)</label><input type="number" id="down" value="60000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Gross Rent ($)</label><input type="number" id="rent" value="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Operating Expenses ($)</label><input type="number" id="exp" value="600" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">1. Purchase & Financing</div>
+      <div class="space-y-1.5">
+        <label for="price" class="block text-xs font-medium text-[var(--ink)]">Purchase Price ($)</label>
+        <input type="number" id="price" value="300000" min="20000" step="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label for="down-pct" class="block text-[var(--ink-soft)] mb-1">Down (%)</label>
+          <input type="number" id="down-pct" value="20" min="0" max="100" step="5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="rate" class="block text-[var(--ink-soft)] mb-1">Rate (%)</label>
+          <input type="number" id="rate" value="6.5" min="0.1" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="term" class="block text-[var(--ink-soft)] mb-1">Term (Yrs)</label>
+          <input type="number" id="term" value="30" min="5" max="30" step="5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">2. Income & Growth</div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label for="rent" class="block text-[var(--ink-soft)] mb-1">Gross Rent ($/mo)</label>
+          <input type="number" id="rent" value="2500" min="0" step="100" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="vacancy" class="block text-[var(--ink-soft)] mb-1">Vacancy Rate (%)</label>
+          <input type="number" id="vacancy" value="5.0" min="0" max="25" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">3. Operating Expenses ($/yr)</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="tax" class="block text-[var(--ink-soft)] mb-1">Property Tax</label>
+          <input type="number" id="tax" value="3600" min="0" step="200" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="ins" class="block text-[var(--ink-soft)] mb-1">Insurance</label>
+          <input type="number" id="ins" value="1500" min="0" step="100" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="maint" class="block text-[var(--ink-soft)] mb-1">Maintenance</label>
+          <input type="number" id="maint" value="2100" min="0" step="150" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Net Monthly Cash Flow:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Annual Pre-Tax Cash Flow:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Net Monthly Cash Flow:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Annual Pre-Tax Cash Flow:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Net Operating Income (NOI):</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Capitalization Rate (Cap Rate):</span><span id="res-p4">0.0%</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Rental Revenue Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Cash-on-Cash Return = (Annual Pre-Tax Cash Flow / Total Cash Invested) × 100.</p>
+    <p>Net Cash Flow = (Gross Rent − Vacancy) − Operating Expenses − Mortgage P&I. Cash-on-Cash Return = (Annual Cash Flow / Down Payment) × 100.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$50k cash invested returning $6,000 annual net cash flow gives a 12.0% cash-on-cash return.</p>
+    <p>$300,000 property with 20% down ($60k cash) generating $2,500/mo rent with $600/mo expenses and $1,517/mo mortgage yields $383/mo net cash flow (7.66% Cash-on-Cash return).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const price = parseFloat(document.getElementById('price').value || '300000');
-      const down = parseFloat(document.getElementById('down').value || '60000');
-      const rent = parseFloat(document.getElementById('rent').value || '2500');
-      const exp = parseFloat(document.getElementById('exp').value || '600');
-      const pmt = amortizedPayment(price - down, 6.5, 360);
-      const netMonthly = rent - exp - pmt;
-      const annualCashFlow = netMonthly * 12;
-      const coc = down > 0 ? (annualCashFlow / down) * 100 : 0;
-      document.getElementById('hero-result-value').textContent = formatPercent(coc, 2);
-      document.getElementById('res-p1').textContent = formatCurrency(netMonthly) + '/mo';
-      document.getElementById('res-p2').textContent = formatCurrency(annualCashFlow) + '/yr';
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Net Cash Flow', 'Mortgage Pmt', 'Expenses'], [Math.max(0, netMonthly), pmt, exp]);
-    
+      const price = parseFloat((document.getElementById('price') as HTMLInputElement)?.value || '300000');
+      const downPct = parseFloat((document.getElementById('down-pct') as HTMLInputElement)?.value || '20');
+      const rate = parseFloat((document.getElementById('rate') as HTMLInputElement)?.value || '6.5');
+      const yrs = parseInt((document.getElementById('term') as HTMLInputElement)?.value || '30');
+
+      const grossRentMo = parseFloat((document.getElementById('rent') as HTMLInputElement)?.value || '2500');
+      const vacancyPct = parseFloat((document.getElementById('vacancy') as HTMLInputElement)?.value || '5.0');
+
+      const tax = parseFloat((document.getElementById('tax') as HTMLInputElement)?.value || '3600');
+      const ins = parseFloat((document.getElementById('ins') as HTMLInputElement)?.value || '1500');
+      const maint = parseFloat((document.getElementById('maint') as HTMLInputElement)?.value || '2100');
+
+      const downCash = price * (downPct / 100);
+      const loanAmount = price - downCash;
+      const mortgagePmt = loanAmount > 0 ? amortizedPayment(loanAmount, rate, yrs * 12) : 0;
+
+      const monthlyExpenses = (tax + ins + maint) / 12;
+      const monthlyVacancyLoss = grossRentMo * (vacancyPct / 100);
+
+      const netMonthlyCashFlow = grossRentMo - monthlyVacancyLoss - monthlyExpenses - mortgagePmt;
+      const annualCashFlow = netMonthlyCashFlow * 12;
+
+      const annualNOI = (grossRentMo - monthlyVacancyLoss - monthlyExpenses) * 12;
+      const capRate = price > 0 ? (annualNOI / price) * 100 : 0;
+      const coc = downCash > 0 ? (annualCashFlow / downCash) * 100 : 0;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(coc, 2);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(netMonthlyCashFlow) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(annualCashFlow) + '/yr';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(annualNOI) + '/yr';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatPercent(capRate, 2);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Cash Flow', 'Mortgage P&I', 'Operating Expenses', 'Vacancy Loss'], [Math.max(0, netMonthlyCashFlow), mortgagePmt, monthlyExpenses, monthlyVacancyLoss]);
+      }
     } catch (err) {
       console.error(err);
     }

@@ -5,62 +5,105 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Home Equity Loan Calculator"
-  description="Calculate borrowing capacity and fixed monthly payment for a home equity loan."
+  description="Calculate your max equity borrowing limit, requested loan monthly payment, and combined loan-to-value (CLTV) ratios."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
-  resultLabel="Monthly Payment"
+  resultLabel="Monthly Home Equity Payment"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Estimated Home Value ($)</label><input type="number" id="value" value="400000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Existing Mortgage Balance ($)</label><input type="number" id="mortgage" value="200000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Max Lender LTV (%)</label><input type="number" id="ltv" value="80" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="rate" value="7.5" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Term (Years)</label><input type="number" id="years" value="15" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="value" class="block text-xs font-semibold text-[var(--ink)]">1. Estimated Home Value ($)</label>
+      <input type="number" id="value" value="400000" min="50000" step="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="mortgage" class="block text-[var(--ink-soft)] mb-1">Current Mortgage Balance ($)</label>
+        <input type="number" id="mortgage" value="200000" min="0" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="ltv" class="block text-[var(--ink-soft)] mb-1">Max Lender LTV (%)</label>
+        <input type="number" id="ltv" value="80" min="50" max="95" step="5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">2. Desired Equity Loan Details</div>
+      <div class="space-y-1.5">
+        <label for="loan-req" class="block text-[var(--ink-soft)] mb-0.5">Requested Loan Amount ($)</label>
+        <input type="number" id="loan-req" value="100000" min="5000" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="rate" class="block text-[var(--ink-soft)] mb-0.5">Interest Rate (%)</label>
+          <input type="number" id="rate" value="7.5" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="years" class="block text-[var(--ink-soft)] mb-0.5">Loan Term (Yrs)</label>
+          <select id="years" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+            <option value="30">30 Years</option>
+            <option value="20">20 Years</option>
+            <option value="15" selected>15 Years</option>
+            <option value="10">10 Years</option>
+            <option value="5">5 Years</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Available Borrowing Limit:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Max Credit Line (LTV Cap):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Max Allowed Borrowing Limit:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Maximum Allowed Loan Cap (LTV):</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Combined LTV (CLTV) Ratio:</span><span id="res-p3" class="font-bold text-white">0%</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Outflow over Term:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Home Equity Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Max Loan = (Home Value × Max LTV%) − Existing Mortgage Balance.</p>
+    <p>Max Borrow Limit = Home Value × LTV% − Existing Mortgage Balance. Combined LTV (CLTV) = ((Current Balance + Equity Loan) / Home Value) × 100.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$400k home with $200k mortgage balance at 80% max LTV allows borrowing up to $120,000 equity.</p>
+    <p>$400,000 home with $200,000 mortgage balance at 80% max LTV allows borrowing up to $120,000 equity ($100,000 loan at 7.5% over 15 yrs = $927/mo).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const value = parseFloat(document.getElementById('value').value || '400000');
-      const mortgage = parseFloat(document.getElementById('mortgage').value || '200000');
-      const ltv = parseFloat(document.getElementById('ltv').value || '80');
-      const rate = parseFloat(document.getElementById('rate').value || '7.5');
-      const years = parseInt(document.getElementById('years').value || '15');
-      const maxBorrow = Math.max(0, (value * (ltv / 100)) - mortgage);
-      const pmt = amortizedPayment(maxBorrow, rate, years * 12);
-      document.getElementById('hero-result-value').textContent = formatCurrency(pmt);
-      document.getElementById('res-p1').textContent = formatCurrency(maxBorrow);
-      document.getElementById('res-p2').textContent = formatCurrency(value * (ltv / 100));
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Borrowable Equity', 'Existing Debt'], [maxBorrow, mortgage]);
-    
+      const val = parseFloat((document.getElementById('value') as HTMLInputElement)?.value || '400000');
+      const mortgage = parseFloat((document.getElementById('mortgage') as HTMLInputElement)?.value || '200000');
+      const ltvPct = parseFloat((document.getElementById('ltv') as HTMLInputElement)?.value || '80');
+
+      const loanReq = parseFloat((document.getElementById('loan-req') as HTMLInputElement)?.value || '100000');
+      const rate = parseFloat((document.getElementById('rate') as HTMLInputElement)?.value || '7.5');
+      const yrs = parseInt((document.getElementById('years') as HTMLSelectElement)?.value || '15');
+
+      const maxCap = val * (ltvPct / 100);
+      const maxBorrow = Math.max(0, maxCap - mortgage);
+
+      const actualLoan = Math.min(loanReq, maxBorrow > 0 ? maxBorrow : loanReq);
+      const pmt = actualLoan > 0 ? amortizedPayment(actualLoan, rate, yrs * 12) : 0;
+      const cltv = val > 0 ? ((mortgage + actualLoan) / val) * 100 : 0;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pmt);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(maxBorrow);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(maxCap);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatPercent(cltv, 1);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(pmt * yrs * 12);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['First Mortgage', 'Home Equity Loan', 'Remaining Equity'], [mortgage, actualLoan, Math.max(0, val - mortgage - actualLoan)]);
+      }
     } catch (err) {
       console.error(err);
     }

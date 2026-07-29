@@ -5,60 +5,158 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Rent vs. Buy Calculator"
-  description="Compare cumulative financial cost of renting vs. buying a home over time."
+  description="Compare the total cumulative net financial cost of renting vs. buying a home over your expected residency horizon."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
   resultLabel="Financial Recommendation"
   resultSuffix=""
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Rent ($)</label><input type="number" id="rent" value="2200" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Target Home Price ($)</label><input type="number" id="price" value="350000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Time Horizon (Years)</label><input type="number" id="years" value="7" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">1. Purchase & Mortgage Options</div>
+      <div class="space-y-1.5">
+        <label for="price" class="block text-xs font-medium text-[var(--ink)]">Target Home Price ($)</label>
+        <input type="number" id="price" value="350000" min="50000" step="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label for="down-pct" class="block text-[var(--ink-soft)] mb-1">Down (%)</label>
+          <input type="number" id="down-pct" value="20" min="0" max="50" step="5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="rate" class="block text-[var(--ink-soft)] mb-1">Rate (%)</label>
+          <input type="number" id="rate" value="6.5" min="0.1" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="horizon" class="block text-[var(--ink-soft)] mb-1">Horizon (Yrs)</label>
+          <input type="number" id="horizon" value="7" min="1" max="30" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">2. Rental Parameters</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="rent" class="block text-[var(--ink-soft)] mb-1">Current Monthly Rent ($)</label>
+          <input type="number" id="rent" value="2200" min="200" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="rent-inc" class="block text-[var(--ink-soft)] mb-1">Annual Rent Increase (%)</label>
+          <input type="number" id="rent-inc" value="3.5" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">3. Taxes, Fees & Investment Yield</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="tax-pct" class="block text-[var(--ink-soft)] mb-1">Tax (%)</label>
+          <input type="number" id="tax-pct" value="1.2" min="0" max="5" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="apprec-pct" class="block text-[var(--ink-soft)] mb-1">Apprec (%)</label>
+          <input type="number" id="apprec-pct" value="4.0" min="-5" max="15" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="inv-return" class="block text-[var(--ink-soft)] mb-1">Return (%)</label>
+          <input type="number" id="inv-return" value="6.0" min="0" max="15" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Cumulative Renting Outflow:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Cumulative Buying Outflow:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Cumulative Net Cost of Renting:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Cumulative Net Cost of Buying:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Estimated Home Equity Built:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Net Overall Financial Advantage:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Cumulative Outflow Comparison" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Compare Net Rent Cost (Rent × Years + Annual Increases) vs. Net Buying Cost (Mortgage + Taxes + Maint − Equity).</p>
+    <p>Net Renting Cost = Total Rent Paid − Investment Returns on Saved Down Payment Cash. Net Buying Cost = Down Payment + Mortgage Payments + Taxes + Maintenance − Proceeds from Home Sale (after selling costs & debt payoff).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Buying a $350k home typically becomes cheaper than $2,200/mo rent after ~5.5 years of home equity build.</p>
+    <p>Buying a $350,000 home with 20% down ($70k) at 6.5% rate over a 7-year horizon yields $112k home equity, making buying ~$28,000 cheaper overall than $2,200/mo rent.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const rent = parseFloat(document.getElementById('rent').value || '2200');
-      const price = parseFloat(document.getElementById('price').value || '350000');
-      const years = parseInt(document.getElementById('years').value || '7');
-      const totalRent = rent * 12 * years * 1.1;
-      const pmt = amortizedPayment(price * 0.9, 6.0, 360);
-      const totalBuy = pmt * 12 * years;
-      const rec = totalBuy < totalRent ? 'Buying is Cheaper' : 'Renting is Cheaper';
-      document.getElementById('hero-result-value').textContent = rec;
-      document.getElementById('res-p1').textContent = formatCurrency(totalRent);
-      document.getElementById('res-p2').textContent = formatCurrency(totalBuy);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Cumulative Rent Cost', 'Cumulative Buying Outflow'], [totalRent, totalBuy]);
-    
+      const price = parseFloat((document.getElementById('price') as HTMLInputElement)?.value || '350000');
+      const downPct = parseFloat((document.getElementById('down-pct') as HTMLInputElement)?.value || '20');
+      const rate = parseFloat((document.getElementById('rate') as HTMLInputElement)?.value || '6.5');
+      const horizonYrs = parseInt((document.getElementById('horizon') as HTMLInputElement)?.value || '7');
+
+      const rentMo = parseFloat((document.getElementById('rent') as HTMLInputElement)?.value || '2200');
+      const rentIncPct = parseFloat((document.getElementById('rent-inc') as HTMLInputElement)?.value || '3.5');
+
+      const taxPct = parseFloat((document.getElementById('tax-pct') as HTMLInputElement)?.value || '1.2');
+      const apprecPct = parseFloat((document.getElementById('apprec-pct') as HTMLInputElement)?.value || '4.0');
+      const invReturnPct = parseFloat((document.getElementById('inv-return') as HTMLInputElement)?.value || '6.0');
+
+      const downCash = price * (downPct / 100);
+      const loanAmount = price - downCash;
+      const monthlyMortgage = amortizedPayment(loanAmount, rate, 360);
+
+      // 1. Renting Simulation
+      let totalRentPaid = 0;
+      let curRent = rentMo;
+      for (let y = 0; y < horizonYrs; y++) {
+        totalRentPaid += curRent * 12;
+        curRent *= (1 + rentIncPct / 100);
+      }
+
+      // Investment return on initial down payment cash if renting
+      const investmentGrowthOnCash = downCash * Math.pow(1 + invReturnPct / 100, horizonYrs) - downCash;
+      const netRentCost = Math.max(0, totalRentPaid - investmentGrowthOnCash);
+
+      // 2. Buying Simulation
+      const annualTaxInsMaint = price * ((taxPct + 1.2) / 100);
+      const totalMortgagePaid = monthlyMortgage * (horizonYrs * 12);
+      const totalTaxInsMaintPaid = annualTaxInsMaint * horizonYrs;
+
+      // Future Home Value & Remaining Loan Balance
+      const futureHomeValue = price * Math.pow(1 + apprecPct / 100, horizonYrs);
+
+      let loanBal = loanAmount;
+      const r = (rate / 100) / 12;
+      for (let m = 0; m < horizonYrs * 12; m++) {
+        const intPmt = loanBal * r;
+        const prinPmt = monthlyMortgage - intPmt;
+        loanBal -= prinPmt;
+      }
+      loanBal = Math.max(0, loanBal);
+
+      const netSaleProceeds = (futureHomeValue * 0.94) - loanBal; // 6% selling costs
+      const homeEquityBuilt = futureHomeValue - loanBal;
+
+      const totalBuyingOutflow = downCash + totalMortgagePaid + totalTaxInsMaintPaid;
+      const netBuyingCost = Math.max(0, totalBuyingOutflow - netSaleProceeds);
+
+      const diff = Math.abs(netRentCost - netBuyingCost);
+      const rec = netBuyingCost < netRentCost ? 'Buying is Cheaper' : 'Renting is Cheaper';
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = rec;
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(netRentCost);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(netBuyingCost);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(homeEquityBuilt);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(diff) + ' net advantage';
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Renting Cost', 'Net Buying Cost'], [netRentCost, netBuyingCost]);
+      }
     } catch (err) {
       console.error(err);
     }

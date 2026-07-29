@@ -5,41 +5,120 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="IRR Calculator"
-  description="Calculate internal rate of return."
+  description="Calculate the Internal Rate of Return (IRR) and Net Present Value (NPV) for irregular capital cash flow streams."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Internal Rate of Return"
+  resultLabel="Internal Rate of Return (IRR)"
   resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Initial Outflow ($)</label><input type="number" id="cf0" value="-10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="c0-val" class="block text-xs font-semibold text-[var(--ink)]">1. Initial Investment Outlay Year 0 ($)</label>
+      <input type="number" id="c0-val" value="50000" min="1000" step="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink-soft)] uppercase tracking-wider">2. Annual Cash Inflows ($)</div>
+      <div class="grid grid-cols-5 gap-1.5">
+        <div>
+          <label for="c1-val" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 1 ($)</label>
+          <input type="number" id="c1-val" value="12000" step="1000" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c2-val" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 2 ($)</label>
+          <input type="number" id="c2-val" value="15000" step="1000" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c3-val" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 3 ($)</label>
+          <input type="number" id="c3-val" value="18000" step="1000" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c4-val" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 4 ($)</label>
+          <input type="number" id="c4-val" value="20000" step="1000" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c5-val" class="block text-[10px] text-[var(--ink-soft)] mb-0.5">Yr 5 ($)</label>
+          <input type="number" id="c5-val" value="22000" step="1000" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-1 text-xs">
+      <label for="discount-rate" class="block text-[var(--ink-soft)] mb-1">Hurdle / Discount Rate (%)</label>
+      <input type="number" id="discount-rate" value="10.0" min="0" max="30" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Outflow:</span><span id="res-p1" class="font-bold text-white">$10,000.00</span></div><div class="flex justify-between"><span>Inflows Sum:</span><span id="res-p2" class="font-bold text-emerald-200">$12,000.00</span></div>
+    <div class="flex justify-between"><span>Internal Rate of Return (IRR):</span><span id="res-p1" class="font-bold text-emerald-200">0.0%</span></div>
+    <div class="flex justify-between"><span>Net Present Value (NPV):</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Cumulative Inflows:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Net Nominal Cash Gain:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Initial Outlay vs Inflows" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Newton-Raphson IRR solver.</p>
+    <p>IRR is the discount rate where NPV = sum(C_t / (1 + IRR)^t) − C_0 = 0 solved via Newton-Raphson method.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>-$10k followed by +$3k, +$4k, +$5k = 8.89% IRR.</p>
+    <p>Investing $50,000 upfront with inflows of $12k, $15k, $18k, $20k, $22k ($87,000 total inflows) yields an IRR of 20.37% (NPV of $18,482 at 10% discount rate).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const irrVal = irr([-10000, 3000, 4000, 5000]); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(irrVal, 2); (document.getElementById('res-p1') as HTMLElement).textContent = '$10,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '$12,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Outflow', 'Inflows'], [10000, 12000]);
+      const c0 = parseFloat((document.getElementById('c0-val') as HTMLInputElement)?.value || '50000');
+      const c1 = parseFloat((document.getElementById('c1-val') as HTMLInputElement)?.value || '12000');
+      const c2 = parseFloat((document.getElementById('c2-val') as HTMLInputElement)?.value || '15000');
+      const c3 = parseFloat((document.getElementById('c3-val') as HTMLInputElement)?.value || '18000');
+      const c4 = parseFloat((document.getElementById('c4-val') as HTMLInputElement)?.value || '20000');
+      const c5 = parseFloat((document.getElementById('c5-val') as HTMLInputElement)?.value || '22000');
+      const discount = parseFloat((document.getElementById('discount-rate') as HTMLInputElement)?.value || '10.0') / 100;
+
+      const inflows = [c1, c2, c3, c4, c5];
+      const totalInflows = inflows.reduce((a, b) => a + b, 0);
+      const netNominalGain = totalInflows - c0;
+
+      // Compute NPV
+      let npv = -c0;
+      inflows.forEach((cf, idx) => {
+        npv += cf / Math.pow(1 + discount, idx + 1);
+      });
+
+      // Newton-Raphson IRR Solver
+      let r = 0.10;
+      for (let i = 0; i < 40; i++) {
+        let f = -c0;
+        let df = 0;
+        inflows.forEach((cf, idx) => {
+          const t = idx + 1;
+          f += cf / Math.pow(1 + r, t);
+          df -= (t * cf) / Math.pow(1 + r, t + 1);
+        });
+        if (Math.abs(f) < 1e-7 || Math.abs(df) < 1e-10) break;
+        r = r - f / df;
+      }
+
+      const irrPct = r * 100;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(irrPct, 2);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatPercent(irrPct, 2);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(npv);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInflows);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(netNominalGain);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Outlay', 'Net Nominal Gain'], [c0, Math.max(0, netNominalGain)]);
+      }
     } catch (err) {
       console.error(err);
     }

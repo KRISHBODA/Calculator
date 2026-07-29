@@ -5,65 +5,103 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Debt-to-Income Ratio Calculator"
-  description="Calculate your front-end (housing) and back-end (total debt) DTI ratios to assess borrowing power."
+  description="Calculate your itemized front-end (housing) and back-end (total debt) DTI ratios to determine mortgage qualification."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
   resultLabel="Back-End DTI Ratio"
   resultSuffix="%"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Gross Monthly Income ($)</label><input type="number" id="monthly-income" value="6000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Housing Payment ($)</label><input type="number" id="housing-pmt" value="1500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Other Monthly Debt Payments ($)</label><input type="number" id="other-debts" value="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="monthly-income" class="block text-xs font-semibold text-[var(--ink)]">1. Gross Monthly Income ($)</label>
+      <input type="number" id="monthly-income" value="6000" min="500" step="250" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      <span class="text-[10px] text-[var(--ink-soft)] block">Pre-tax monthly earnings from salary, bonuses, and side income.</span>
+    </div>
+
+    <div class="space-y-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">2. Monthly Debt Obligations</div>
+      
+      <div class="space-y-1.5">
+        <label for="housing-pmt" class="block text-xs font-medium text-[var(--ink)]">Housing Payment (Rent or Proposed Mortgage)</label>
+        <input type="number" id="housing-pmt" value="1500" min="0" step="50" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label for="car-pmt" class="block text-[var(--ink-soft)] mb-1">Car Loan Payments ($/mo)</label>
+          <input type="number" id="car-pmt" value="350" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="student-pmt" class="block text-[var(--ink-soft)] mb-1">Student Loans ($/mo)</label>
+          <input type="number" id="student-pmt" value="150" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="cc-pmt" class="block text-[var(--ink-soft)] mb-1">Credit Card Minimums ($/mo)</label>
+          <input type="number" id="cc-pmt" value="100" min="0" step="10" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="other-pmt" class="block text-[var(--ink-soft)] mb-1">Other Personal Loans ($/mo)</label>
+          <input type="number" id="other-pmt" value="0" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Front-End DTI (Housing Only):</span><span id="res-p1" class="font-bold text-white">0%</span></div>
-      <div class="flex justify-between"><span>Total Monthly Debt Obligations:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Front-End DTI (Housing Ratio):</span><span id="res-p1" class="font-bold text-white">0%</span></div>
+    <div class="flex justify-between"><span>Total Monthly Debt Obligations:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Lender Qualification Status:</span><span id="res-p3" class="font-bold text-white">-</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Remaining Disposable Income:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="DTI Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>DTI = (Total Monthly Debt Payments / Gross Monthly Income) × 100.</p>
+    <p>Front-End DTI = (Housing Payment / Gross Income) × 100. Back-End DTI = (Total Monthly Debts / Gross Income) × 100. Standard conventional mortgage cap is 36% back-end (up to 43% for FHA/VA).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Monthly income $6,000 with $1,500 housing payment + $500 auto/student loans gives 33.3% total DTI.</p>
+    <p>For $6,000 gross monthly income with $1,500 housing payment + $600 auto/student/card debts, Front-End DTI is 25.0% and Back-End DTI is 35.0% (Well Qualified).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const income = parseFloat(document.getElementById('monthly-income').value || '6000');
-      const housing = parseFloat(document.getElementById('housing-pmt').value || '1500');
-      const otherDebt = parseFloat(document.getElementById('other-debts').value || '500');
+      const income = parseFloat((document.getElementById('monthly-income') as HTMLInputElement)?.value || '6000');
+      const housing = parseFloat((document.getElementById('housing-pmt') as HTMLInputElement)?.value || '1500');
+      const car = parseFloat((document.getElementById('car-pmt') as HTMLInputElement)?.value || '350');
+      const student = parseFloat((document.getElementById('student-pmt') as HTMLInputElement)?.value || '150');
+      const cc = parseFloat((document.getElementById('cc-pmt') as HTMLInputElement)?.value || '100');
+      const other = parseFloat((document.getElementById('other-pmt') as HTMLInputElement)?.value || '0');
+
+      const nonHousingDebt = car + student + cc + other;
+      const totalDebt = housing + nonHousingDebt;
 
       const frontDTI = income > 0 ? (housing / income) * 100 : 0;
-      const totalDebt = housing + otherDebt;
       const backDTI = income > 0 ? (totalDebt / income) * 100 : 0;
+      const remainingIncome = Math.max(0, income - totalDebt);
 
-      document.getElementById('hero-result-value').textContent = formatPercent(backDTI, 1);
-      document.getElementById('res-p1').textContent = formatPercent(frontDTI, 1);
-      document.getElementById('res-p2').textContent = formatCurrency(totalDebt) + '/mo';
+      let status = 'Well Qualified (<36%)';
+      if (backDTI > 50) status = 'High Risk (>50%)';
+      else if (backDTI > 43) status = 'Requires Manual Exception (43-50%)';
+      else if (backDTI > 36) status = 'FHA / VA Cap Tier (36-43%)';
 
-      const canvas = document.getElementById('calc-chart');
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatPercent(backDTI, 1);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatPercent(frontDTI, 1);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalDebt) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = status;
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(remainingIncome) + '/mo';
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
       if (canvas) {
-        renderDonutChart(canvas, ['Housing Payment', 'Other Debt Payments', 'Disposable Income'], [housing, otherDebt, Math.max(0, income - totalDebt)]);
+        renderDonutChart(canvas, ['Housing Payment', 'Non-Housing Debts', 'Remaining Income'], [housing, nonHousingDebt, remainingIncome]);
       }
-    
     } catch (err) {
       console.error(err);
     }
