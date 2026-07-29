@@ -5,83 +5,231 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="House Affordability Calculator"
-  description="Calculate maximum home purchase price based on your gross income, monthly debt obligations, and target debt-to-income (DTI) ratio."
+  description="Calculate maximum home purchase price based on your gross income, monthly debt obligations, down payment, and target debt-to-income (DTI) ratio."
   category="Mortgage & Real Estate"
   categoryHref="/#mortgage-real-estate"
-  resultLabel="Maximum Home Purchase Price"
+  resultLabel="Maximum Affordable Home Price"
   resultSuffix="est."
 >
   <div slot="inputs" class="space-y-4">
+    <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)] mb-2">1. Income & Debt Details</div>
     
-      <div class="space-y-1.5"><label class="text-xs font-medium">Annual Gross Income ($)</label><input type="number" id="annual-income" value="100000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Debt Payments ($)</label><input type="number" id="monthly-debts" value="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Available Down Payment ($)</label><input type="number" id="down-payment" value="50000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="interest-rate" value="6.5" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Target DTI Ratio (%)</label><input type="number" id="target-dti" value="36" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <!-- Annual Income -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="annual-income" class="text-[var(--ink)]">Annual Household Income ($)</label>
+        <input type="number" id="annual-income" value="100000" min="10000" step="2500" class="w-28 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <input type="range" id="income-slider" value="100000" min="20000" max="400000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+    </div>
+
+    <!-- Monthly Debts -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="monthly-debts" class="text-[var(--ink)]">Monthly Debt Payments (auto, loans, cards)</label>
+        <input type="number" id="monthly-debts" value="500" min="0" step="50" class="w-24 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 font-mono text-xs text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)] mt-4 mb-2">2. Loan & Down Payment</div>
     
+    <!-- Term & Interest Rate -->
+    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="loan-term" class="block text-[var(--ink-soft)] mb-1">Mortgage Loan Term</label>
+        <select id="loan-term" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+          <option value="30" selected>30 Years (360 mos)</option>
+          <option value="20">20 Years (240 mos)</option>
+          <option value="15">15 Years (180 mos)</option>
+          <option value="10">10 Years (120 mos)</option>
+        </select>
+      </div>
+      <div>
+        <label for="interest-rate" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
+        <input type="number" id="interest-rate" value="6.5" min="0.1" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-xs text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- Down Payment -->
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <div class="flex justify-between items-center text-xs font-medium">
+        <label for="down-payment-pct" class="text-[var(--ink)]">Down Payment (%)</label>
+        <input type="number" id="down-payment-pct" value="20" min="0" max="80" step="1" class="w-20 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 font-mono text-xs text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)] mt-4 mb-2">3. Taxes, Fees & DTI Target</div>
+
+    <!-- Taxes, HOA & Insurance -->
+    <div class="grid grid-cols-3 gap-2 text-xs border-b border-[var(--rule-light)] pb-3">
+      <div>
+        <label for="property-tax" class="block text-[var(--ink-soft)] mb-1">Property Tax (%)</label>
+        <input type="number" id="property-tax" value="1.2" min="0" max="5" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="insurance" class="block text-[var(--ink-soft)] mb-1">Insurance (%)</label>
+        <input type="number" id="insurance" value="0.5" min="0" max="3" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-xs text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="hoa-fee" class="block text-[var(--ink-soft)] mb-1">HOA ($/mo)</label>
+        <input type="number" id="hoa-fee" value="0" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-xs text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <!-- Target DTI Ratio -->
+    <div class="space-y-1.5 text-xs">
+      <div class="flex justify-between items-center">
+        <label for="target-dti" class="font-medium text-[var(--ink)]">Target Debt-to-Income (DTI) Limit</label>
+        <select id="target-dti" class="bg-[var(--paper)] border border-[var(--rule)] text-[var(--ink)] text-xs rounded px-2 py-1 font-mono">
+          <option value="28">28% (Conservative Rule)</option>
+          <option value="36" selected>36% (Standard Conventional)</option>
+          <option value="41">41% (VA Loan Guideline)</option>
+          <option value="43">43% (FHA Cap)</option>
+          <option value="50">50% (Max Aggressive)</option>
+        </select>
+      </div>
+    </div>
   </div>
 
+  <!-- Result Breakdown -->
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Max Monthly Housing Pmt:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Maximum Loan Amount:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between items-center text-emerald-200/90">
+      <span>Max Monthly Housing Budget:</span>
+      <span id="res-housing-pmt" class="font-bold text-white">$0.00 / mo</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/80">
+      <span>Estimated Borrowed Loan Principal:</span>
+      <span id="res-loan-amount" class="font-bold text-emerald-200">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-emerald-300/70">
+      <span>Required Down Payment Cash:</span>
+      <span id="res-down-cash">$0.00</span>
+    </div>
+    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1 border-t border-emerald-800/60 font-bold">
+      <span>Total Home Price Affordability:</span>
+      <span id="res-max-price" class="text-white font-bold text-sm">$0.00</span>
+    </div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="House Affordability Component Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Max Loan = (Gross Monthly Income × DTI Cap − Monthly Debts) / Amortization Factor.</p>
+    <p>Maximum Home Price is computed from your gross monthly income and target DTI limit:</p>
+    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+      Max Housing Budget = (Gross Monthly Income × Target DTI%) − Monthly Debts
+    </div>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>With $100,000 annual income, $500 monthly debts, and 36% target DTI, max affordable price is ~$340,000.</p>
+    <p class="font-semibold text-[var(--ink)]">Test Case:</p>
+    <p>With $100,000 annual income ($8,333/mo), $500 monthly debts, 36% DTI limit, and 20% down payment at 6.5% interest, maximum affordable home price is <strong>~$386,000</strong> ($308,900 loan + $77,200 down payment).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
-  function update() {
-    try {
-      
-      const income = parseFloat(document.getElementById('annual-income').value || '100000');
-      const debts = parseFloat(document.getElementById('monthly-debts').value || '500');
-      const down = parseFloat(document.getElementById('down-payment').value || '50000');
-      const rate = parseFloat(document.getElementById('interest-rate').value || '6.5');
-      const dti = parseFloat(document.getElementById('target-dti').value || '36');
+  function calculate() {
+    const incomeInput = document.getElementById('annual-income') as HTMLInputElement;
+    const sliderInput = document.getElementById('income-slider') as HTMLInputElement;
+    const debtsInput = document.getElementById('monthly-debts') as HTMLInputElement;
+    const termSelect = document.getElementById('loan-term') as HTMLSelectElement;
+    const rateInput = document.getElementById('interest-rate') as HTMLInputElement;
+    const downInput = document.getElementById('down-payment-pct') as HTMLInputElement;
+    const taxInput = document.getElementById('property-tax') as HTMLInputElement;
+    const insInput = document.getElementById('insurance') as HTMLInputElement;
+    const hoaInput = document.getElementById('hoa-fee') as HTMLInputElement;
+    const dtiSelect = document.getElementById('target-dti') as HTMLSelectElement;
 
-      const grossMonthly = income / 12;
-      const maxHousingPmt = Math.max(0, (grossMonthly * (dti / 100)) - debts);
-      const r = (rate / 100) / 12;
-      const n = 360;
-      const factor = (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-      const maxLoan = maxHousingPmt / factor;
-      const maxPrice = maxLoan + down;
+    if (!incomeInput) return;
 
-      document.getElementById('hero-result-value').textContent = formatCurrency(maxPrice);
-      document.getElementById('res-p1').textContent = formatCurrency(maxHousingPmt) + '/mo';
-      document.getElementById('res-p2').textContent = formatCurrency(maxLoan);
+    const income = parseFloat(incomeInput.value || '100000');
+    const debts = parseFloat(debtsInput?.value || '500');
+    const years = parseInt(termSelect?.value || '30');
+    const rate = parseFloat(rateInput?.value || '6.5');
+    const downPct = parseFloat(downInput?.value || '20') / 100;
+    const taxRatePct = parseFloat(taxInput?.value || '1.2') / 100;
+    const insRatePct = parseFloat(insInput?.value || '0.5') / 100;
+    const hoaFee = parseFloat(hoaInput?.value || '0');
+    const dtiCapPct = parseFloat(dtiSelect?.value || '36') / 100;
 
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) {
-        renderDonutChart(canvas, ['Max Borrowed Loan', 'Down Payment'], [maxLoan, down]);
-      }
-    
-    } catch (err) {
-      console.error(err);
+    const grossMonthly = income / 12;
+    const maxHousingBudget = Math.max(0, (grossMonthly * dtiCapPct) - debts);
+
+    // Amortization rate factor
+    const r = (rate / 100) / 12;
+    const n = years * 12;
+    const pmtFactor = r > 0 ? (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : (1 / n);
+
+    // Monthly housing cost per $1 of Home Price P:
+    // P * [(1 - downPct) * pmtFactor + (taxRatePct / 12) + (insRatePct / 12)] + hoaFee = maxHousingBudget
+    const monthlyRatePerDollar = ((1 - downPct) * pmtFactor) + (taxRatePct / 12) + (insRatePct / 12);
+    const availableForHousing = Math.max(0, maxHousingBudget - hoaFee);
+
+    const maxHomePrice = monthlyRatePerDollar > 0 ? availableForHousing / monthlyRatePerDollar : 0;
+    const maxLoanAmount = maxHomePrice * (1 - downPct);
+    const requiredDownCash = maxHomePrice * downPct;
+
+    const hero = document.getElementById('hero-result-value');
+    if (hero) hero.textContent = formatCurrency(maxHomePrice);
+
+    const resHousing = document.getElementById('res-housing-pmt');
+    if (resHousing) resHousing.textContent = formatCurrency(maxHousingBudget) + '/mo';
+
+    const resLoan = document.getElementById('res-loan-amount');
+    if (resLoan) resLoan.textContent = formatCurrency(maxLoanAmount);
+
+    const resDown = document.getElementById('res-down-cash');
+    if (resDown) resDown.textContent = formatCurrency(requiredDownCash);
+
+    const resMaxPrice = document.getElementById('res-max-price');
+    if (resMaxPrice) resMaxPrice.textContent = formatCurrency(maxHomePrice);
+
+    const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+    if (canvas) {
+      renderDonutChart(
+        canvas,
+        ['Borrowed Loan Principal', 'Down Payment Cash'],
+        [maxLoanAmount, requiredDownCash]
+      );
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('input, select').forEach(el => {
-      el.addEventListener('input', update);
-      el.addEventListener('change', update);
+  function setup() {
+    const annualIncome = document.getElementById('annual-income') as HTMLInputElement;
+    const incomeSlider = document.getElementById('income-slider') as HTMLInputElement;
+
+    if (annualIncome && incomeSlider) {
+      annualIncome.addEventListener('input', () => {
+        incomeSlider.value = annualIncome.value;
+        calculate();
+      });
+      incomeSlider.addEventListener('input', () => {
+        annualIncome.value = incomeSlider.value;
+        calculate();
+      });
+    }
+
+    const otherInputs = ['monthly-debts', 'loan-term', 'interest-rate', 'down-payment-pct', 'property-tax', 'insurance', 'hoa-fee', 'target-dti'];
+    otherInputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', calculate);
+        el.addEventListener('change', calculate);
+      }
     });
-    update();
-  });
+
+    calculate();
+  }
+
+  // Run immediately and on DOM loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+  document.addEventListener('astro:page-load', setup);
 </script>

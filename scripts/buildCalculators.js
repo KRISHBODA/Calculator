@@ -15,38 +15,119 @@ const calculators = [
     resultLabel: 'Interest Saved',
     resultSuffix: 'total',
     formulaText: 'Compares baseline amortization schedule against schedule with extra monthly principal contributions.',
-    workedExample: 'Adding $200/mo extra on a $250,000, 30-year 6% loan saves over $60,000 in interest and pays off 5 years early.',
+    workedExample: 'For a $400,000 30-year loan at 6% with 25 years remaining, adding $500/mo extra principal saves over $92,000 in interest and pays off the loan 5 years 9 months early.',
     scriptLogic: `
-      const amount = parseFloat(document.getElementById('loan-amount').value || '250000');
-      const rate = parseFloat(document.getElementById('interest-rate').value || '6.0');
-      const years = parseInt(document.getElementById('loan-term').value || '30');
-      const extra = parseFloat(document.getElementById('extra-payment').value || '200');
+      const origAmount = parseFloat(document.getElementById('loan-amount').value || '400000');
+      const origTermYears = parseFloat(document.getElementById('loan-term').value || '30');
+      const interestRate = parseFloat(document.getElementById('interest-rate').value || '6.0');
+      const remainingYears = parseFloat(document.getElementById('remaining-years').value || '25');
+      const remainingMonths = parseFloat(document.getElementById('remaining-months').value || '0');
+      const extraMonthly = parseFloat(document.getElementById('extra-monthly').value || '500');
+      const extraYearly = parseFloat(document.getElementById('extra-yearly').value || '0');
+      const extraOnetime = parseFloat(document.getElementById('extra-onetime').value || '0');
 
-      const months = years * 12;
-      const baseSched = amortizationSchedule(amount, rate, months, 0);
-      const extraSched = amortizationSchedule(amount, rate, months, extra);
+      const r = (interestRate / 100) / 12;
+      const origMonthsTotal = Math.round(origTermYears * 12);
+      const remainingMonthsTotal = Math.max(1, Math.round(remainingYears * 12 + remainingMonths));
+      const elapsedMonths = Math.max(0, origMonthsTotal - remainingMonthsTotal);
 
-      const interestSaved = Math.max(0, baseSched.totalInterest - extraSched.totalInterest);
-      const monthsSaved = Math.max(0, baseSched.monthly.length - extraSched.monthly.length);
+      const monthlyPayment = r > 0 && origMonthsTotal > 0
+        ? origAmount * (r * Math.pow(1 + r, origMonthsTotal)) / (Math.pow(1 + r, origMonthsTotal) - 1)
+        : origAmount / (origMonthsTotal || 1);
+
+      let currentBalance = origAmount;
+      if (r > 0 && elapsedMonths > 0 && origMonthsTotal > 0) {
+        currentBalance = origAmount * (Math.pow(1 + r, origMonthsTotal) - Math.pow(1 + r, elapsedMonths)) / (Math.pow(1 + r, origMonthsTotal) - 1);
+      } else if (elapsedMonths > 0 && origMonthsTotal > 0) {
+        currentBalance = origAmount * (1 - (elapsedMonths / origMonthsTotal));
+      }
+      currentBalance = Math.max(0, currentBalance);
+
+      let baseBalance = currentBalance;
+      let baseTotalInterest = 0;
+      let baseMonthsCount = 0;
+      while (baseBalance > 0.01 && baseMonthsCount < 600) {
+        baseMonthsCount++;
+        const interestForMonth = baseBalance * r;
+        const principalForMonth = Math.min(baseBalance, Math.max(0, monthlyPayment - interestForMonth));
+        baseTotalInterest += interestForMonth;
+        baseBalance -= principalForMonth;
+      }
+
+      let extraBalance = currentBalance;
+      let extraTotalInterest = 0;
+      let extraMonthsCount = 0;
+      while (extraBalance > 0.01 && extraMonthsCount < 600) {
+        extraMonthsCount++;
+        const interestForMonth = extraBalance * r;
+        let extraPmt = Math.max(0, extraMonthly);
+        if (extraMonthsCount % 12 === 1) extraPmt += Math.max(0, extraYearly);
+        if (extraMonthsCount === 1) extraPmt += Math.max(0, extraOnetime);
+
+        const totalMonthlyPmt = monthlyPayment + extraPmt;
+        const maxPmtNeeded = extraBalance + interestForMonth;
+        const actualPmt = Math.min(totalMonthlyPmt, maxPmtNeeded);
+        const principalForMonth = Math.max(0, actualPmt - interestForMonth);
+
+        extraTotalInterest += interestForMonth;
+        extraBalance -= principalForMonth;
+      }
+
+      const interestSaved = Math.max(0, baseTotalInterest - extraTotalInterest);
+      const monthsSaved = Math.max(0, baseMonthsCount - extraMonthsCount);
+      const yearsSaved = Math.floor(monthsSaved / 12);
+      const remMonthsSaved = monthsSaved % 12;
+
+      const timeSavedText = yearsSaved > 0
+        ? yearsSaved + ' yrs ' + remMonthsSaved + ' mos (' + monthsSaved + ' mos)'
+        : monthsSaved + ' months';
+
+      const newPayoffYears = Math.floor(extraMonthsCount / 12);
+      const newPayoffMonths = extraMonthsCount % 12;
+      const newPayoffText = newPayoffYears + ' yrs ' + newPayoffMonths + ' mos';
 
       document.getElementById('hero-result-value').textContent = formatCurrency(interestSaved);
-      document.getElementById('res-p1').textContent = monthsSaved + ' months (' + (monthsSaved/12).toFixed(1) + ' yrs)';
-      document.getElementById('res-p2').textContent = formatCurrency(extraSched.totalInterest);
+      document.getElementById('res-p1').textContent = timeSavedText;
+      document.getElementById('res-p2').textContent = newPayoffText;
+      document.getElementById('res-p3').textContent = formatCurrency(monthlyPayment);
+      document.getElementById('res-p4').textContent = formatCurrency(currentBalance);
+      document.getElementById('res-p5').textContent = formatCurrency(extraTotalInterest);
+      document.getElementById('res-p6').textContent = formatCurrency(baseTotalInterest);
 
       const canvas = document.getElementById('calc-chart');
       if (canvas) {
-        renderDonutChart(canvas, ['Interest Saved', 'Remaining Interest Paid'], [interestSaved, extraSched.totalInterest]);
+        renderDonutChart(canvas, ['Interest Saved', 'New Interest Paid'], [interestSaved, extraTotalInterest]);
       }
     `,
     inputsHTML: `
-      <div class="space-y-1.5"><label class="text-xs font-medium">Original Loan Balance ($)</label><input type="number" id="loan-amount" value="250000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="interest-rate" value="6.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Remaining Term (Years)</label><input type="number" id="loan-term" value="30" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Extra Monthly Payment ($)</label><input type="number" id="extra-payment" value="200" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="space-y-1.5"><label class="text-xs font-medium text-[var(--ink)]">Original Loan Amount ($)</label><input type="number" id="loan-amount" value="400000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="space-y-1.5"><label class="text-xs font-medium text-[var(--ink)]">Original Loan Term (Years)</label><input type="number" id="loan-term" value="30" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+        <div class="space-y-1.5"><label class="text-xs font-medium text-[var(--ink)]">Interest Rate (%)</label><input type="number" id="interest-rate" value="6.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+      </div>
+      <div class="pt-2 border-t border-[var(--rule-light)]">
+        <label class="text-xs font-semibold text-[var(--ink)]">Remaining Loan Term</label>
+        <div class="grid grid-cols-2 gap-2 mt-1.5">
+          <div class="space-y-1"><label class="text-[10px] text-[var(--ink-soft)] font-medium">Years</label><input type="number" id="remaining-years" value="25" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+          <div class="space-y-1"><label class="text-[10px] text-[var(--ink-soft)] font-medium">Months</label><input type="number" id="remaining-months" value="0" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+        </div>
+      </div>
+      <div class="pt-2 border-t border-[var(--rule-light)] space-y-3">
+        <label class="text-xs font-semibold text-[var(--ink)]">Extra Payments</label>
+        <div class="space-y-1.5"><label class="text-xs font-medium text-[var(--ink)]">Additional per Month ($)</label><input type="number" id="extra-monthly" value="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1.5"><label class="text-xs font-medium text-[var(--ink)]">Additional per Year ($)</label><input type="number" id="extra-yearly" value="0" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+          <div class="space-y-1.5"><label class="text-xs font-medium text-[var(--ink)]">One-Time Payment ($)</label><input type="number" id="extra-onetime" value="0" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+        </div>
+      </div>
     `,
     breakdownHTML: `
-      <div class="flex justify-between"><span>Payoff Time Reduced:</span><span id="res-p1" class="font-bold text-white">0 months</span></div>
-      <div class="flex justify-between"><span>New Total Interest:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+      <div class="flex justify-between"><span>Payoff Time Saved:</span><span id="res-p1" class="font-bold text-white">0 months</span></div>
+      <div class="flex justify-between"><span>New Payoff Term:</span><span id="res-p2" class="font-bold text-emerald-200">0 yrs</span></div>
+      <div class="flex justify-between"><span>Scheduled Monthly Payment:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>Current Loan Balance:</span><span id="res-p4" class="font-bold text-white">$0.00</span></div>
+      <div class="flex justify-between"><span>New Total Interest Paid:</span><span id="res-p5" class="font-bold text-emerald-200">$0.00</span></div>
+      <div class="flex justify-between"><span>Original Remaining Interest:</span><span id="res-p6" class="font-bold text-gray-300">$0.00</span></div>
     `
   },
   {

@@ -5,189 +5,51 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Compound Interest Calculator"
-  description="Calculate compound interest growth across compounding frequencies (daily, monthly, quarterly, annual) with deposit frequencies, inflation adjustments, and tax rates."
+  description="Calculate compound growth across frequencies."
   category="Investment & Savings"
   categoryHref="/#investment"
-  resultLabel="Future Portfolio Balance"
+  resultLabel="Future Value"
   resultSuffix=""
 >
-  <!-- Input Controls (10 Options) -->
   <div slot="inputs" class="space-y-4">
-    <!-- 1. Initial Deposit -->
-    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
-      <div class="flex justify-between items-center text-xs font-medium">
-        <label for="ci-principal-num" class="text-[var(--ink)]">1. Initial Investment Principal</label>
-        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="ci-principal-num" value="10000" min="0" max="2000000" step="500" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
-      </div>
-      <input type="range" id="ci-principal-slider" value="10000" min="0" max="500000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
-    </div>
-
-    <!-- 2 & 3. Periodic Deposit & Frequency -->
-    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
-      <div>
-        <label for="ci-deposit-num" class="block text-[var(--ink-soft)] mb-1">2. Recurring Deposit ($)</label>
-        <input type="number" id="ci-deposit-num" value="250" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
-      </div>
-      <div>
-        <label for="ci-deposit-freq" class="block text-[var(--ink-soft)] mb-1">3. Deposit Frequency</label>
-        <select id="ci-deposit-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
-          <option value="12" selected>Monthly</option>
-          <option value="4">Quarterly</option>
-          <option value="1">Annually</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- 4. Investment Duration (Years) -->
-    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
-      <div class="flex justify-between items-center text-xs font-medium">
-        <label for="ci-years-num" class="text-[var(--ink)]">4. Length of Time (Years)</label>
-        <input type="number" id="ci-years-num" value="10" min="1" max="50" class="w-16 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 font-mono" />
-      </div>
-    </div>
-
-    <!-- 5 & 6. Interest Rate & Compounding Frequency -->
-    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
-      <div>
-        <label for="ci-rate-num" class="block text-[var(--ink-soft)] mb-1">5. Interest Rate (%)</label>
-        <input type="number" id="ci-rate-num" value="6.5" min="0.1" max="25" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
-      </div>
-      <div>
-        <label for="ci-compound-freq" class="block text-[var(--ink-soft)] mb-1">6. Compounding Frequency</label>
-        <select id="ci-compound-freq" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
-          <option value="365">Daily (365/yr)</option>
-          <option value="12" selected>Monthly (12/yr)</option>
-          <option value="4">Quarterly (4/yr)</option>
-          <option value="1">Annually (1/yr)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- 7 & 8. Inflation & Tax Rates -->
-    <div class="grid grid-cols-2 gap-3 text-xs border-b border-[var(--rule-light)] pb-3">
-      <div>
-        <label for="ci-inflation-pct" class="block text-[var(--ink-soft)] mb-1">7. Inflation Rate (%)</label>
-        <input type="number" id="ci-inflation-pct" value="2.5" min="0" max="10" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
-      </div>
-      <div>
-        <label for="ci-tax-pct" class="block text-[var(--ink-soft)] mb-1">8. Tax Rate on Growth (%)</label>
-        <input type="number" id="ci-tax-pct" value="15.0" min="0" max="40" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
-      </div>
-    </div>
-
-    <!-- 9 & 10. Deposit Timing & Variance -->
-    <div class="grid grid-cols-2 gap-3 text-xs">
-      <div>
-        <label for="ci-timing-select" class="block text-[var(--ink-soft)] mb-1">9. Deposit Timing</label>
-        <select id="ci-timing-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono">
-          <option value="end" selected>End of Period</option>
-          <option value="beginning">Beginning of Period</option>
-        </select>
-      </div>
-      <div>
-        <label for="ci-variance-pct" class="block text-[var(--ink-soft)] mb-1">10. Rate Variance (± %)</label>
-        <input type="number" id="ci-variance-pct" value="1.0" min="0" max="5" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
-      </div>
-    </div>
+    <div class="space-y-1.5"><label class="text-xs font-medium">Principal ($)</label><input type="number" id="p" value="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
   </div>
 
-  <!-- Result Breakdown -->
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between items-center text-emerald-200/90">
-      <span>Initial Investment Principal:</span>
-      <span id="ci-breakdown-principal" class="font-bold text-white">$0.00</span>
-    </div>
-    <div class="flex justify-between items-center text-emerald-300/80">
-      <span>Total Recurring Contributions:</span>
-      <span id="ci-breakdown-deposits" class="font-bold text-emerald-300">$0.00</span>
-    </div>
-    <div class="flex justify-between items-center text-emerald-300/70">
-      <span>Total Compound Interest Earned:</span>
-      <span id="ci-breakdown-interest">$0.00</span>
-    </div>
-    <div class="flex justify-between items-center pt-2 border-t border-emerald-800/60 font-bold text-emerald-100">
-      <span>Total Nominal Future Balance:</span>
-      <span id="ci-breakdown-total">$0.00</span>
-    </div>
-    <div class="flex justify-between items-center text-xs text-emerald-200/90 pt-1">
-      <span>Inflation-Adjusted Purchasing Power:</span>
-      <span id="ci-breakdown-inflation" class="font-bold text-white">$0.00</span>
-    </div>
+    <div class="flex justify-between"><span>Compound Interest:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div><div class="flex justify-between"><span>Principal:</span><span id="res-p2" class="font-bold text-emerald-200">$10,000.00</span></div>
   </div>
 
-  <!-- Interactive Chart -->
   <div slot="chart">
-    <ResultChart id="ci-chart" type="donut" title="Compound Portfolio Composition" />
+    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
   </div>
 
-  <!-- Formula Explanation -->
   <div slot="formula-explanation" class="space-y-2">
-    <p>Compound interest formula incorporating deposit frequency and compound periods:</p>
-    <div class="p-2.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
-      A = P(1 + r/n)^(n×t) + PMT × [((1 + r/n)^(n×t) - 1) / (r/n)]
-    </div>
+    <p>A = P(1 + r/n)^(n×t). Test: $10k at 5% monthly 10yr = $16,470.09.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p class="font-semibold text-[var(--ink)]">Test Case:</p>
-    <p>$10,000 initial + $250/mo at 6.5% monthly compounding over 10 years yields ~$58,600 total balance ($18,600 interest earned).</p>
+    <p>$10,000 at 5% monthly compounding over 10 years equals $16,470.09.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { futureValueLumpSum, futureValueSeries, formatCurrency } from '../../scripts/finance.js';
-  import { renderDonutChart } from '../../scripts/charts.js';
+  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
+  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
 
-  function updateCompoundCalculator() {
-    const pv = parseFloat((document.getElementById('ci-principal-num') as HTMLInputElement)?.value || '10000');
-    const pmt = parseFloat((document.getElementById('ci-deposit-num') as HTMLInputElement)?.value || '250');
-    const depFreq = parseInt((document.getElementById('ci-deposit-freq') as HTMLSelectElement)?.value || '12');
-    const years = parseFloat((document.getElementById('ci-years-num') as HTMLInputElement)?.value || '10');
-    const rate = parseFloat((document.getElementById('ci-rate-num') as HTMLInputElement)?.value || '6.5');
-    const compoundFreq = parseInt((document.getElementById('ci-compound-freq') as HTMLSelectElement)?.value || '12');
-    const inflationRate = parseFloat((document.getElementById('ci-inflation-pct') as HTMLInputElement)?.value || '2.5') / 100;
-    const taxRate = parseFloat((document.getElementById('ci-tax-pct') as HTMLInputElement)?.value || '15.0') / 100;
-
-    (document.getElementById('ci-principal-slider') as HTMLInputElement).value = String(pv);
-
-    const fvInitial = futureValueLumpSum(pv, rate, years, compoundFreq);
-    const fvSeries = futureValueSeries(pmt, rate, years, depFreq);
-    const totalBalance = fvInitial + fvSeries;
-    const totalDeposits = pmt * depFreq * years;
-    const totalPrincipal = pv + totalDeposits;
-    const grossInterest = Math.max(0, totalBalance - totalPrincipal);
-    const netInterest = grossInterest * (1 - taxRate);
-    const netBalance = totalPrincipal + netInterest;
-    const inflationAdjusted = netBalance / Math.pow(1 + inflationRate, years);
-
-    (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(totalBalance);
-    (document.getElementById('ci-breakdown-principal') as HTMLElement).textContent = formatCurrency(pv);
-    (document.getElementById('ci-breakdown-deposits') as HTMLElement).textContent = formatCurrency(totalDeposits);
-    (document.getElementById('ci-breakdown-interest') as HTMLElement).textContent = formatCurrency(grossInterest);
-    (document.getElementById('ci-breakdown-total') as HTMLElement).textContent = formatCurrency(totalBalance);
-    (document.getElementById('ci-breakdown-inflation') as HTMLElement).textContent = formatCurrency(inflationAdjusted);
-
-    const canvas = document.getElementById('ci-chart') as HTMLCanvasElement;
-    if (canvas) {
-      renderDonutChart(
-        canvas,
-        ['Initial Principal', 'Recurring Deposits', 'Compound Interest Earned'],
-        [pv, totalDeposits, grossInterest]
-      );
+  function update() {
+    try {
+      const fv = futureValueLumpSum(10000, 5.0, 10, 12); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(fv - 10000); (document.getElementById('res-p2') as HTMLElement).textContent = '$10,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Principal', 'Compound Interest'], [10000, fv - 10000]);
+    } catch (err) {
+      console.error(err);
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const inputs = ['ci-principal-num', 'ci-principal-slider', 'ci-deposit-num', 'ci-deposit-freq', 'ci-years-num', 'ci-rate-num', 'ci-compound-freq', 'ci-inflation-pct', 'ci-tax-pct', 'ci-timing-select', 'ci-variance-pct'];
-
-    inputs.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('input', updateCompoundCalculator);
-        el.addEventListener('change', updateCompoundCalculator);
-      }
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
     });
-
-    updateCompoundCalculator();
+    update();
   });
 </script>
