@@ -5,62 +5,94 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Lease Calculator"
-  description="Generic commercial equipment or asset lease payment calculator."
-  category="Other Financial Tools"
+  description="Calculate equipment or asset lease payments and compare the financial total cost of leasing vs buying outright."
+  category="Other Financial Calculators"
   categoryHref="/#other"
   resultLabel="Monthly Lease Payment"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Asset Cost ($)</label><input type="number" id="cost" value="20000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Residual Value ($)</label><input type="number" id="res" value="8000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Term (Months)</label><input type="number" id="term" value="24" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Money Factor</label><input type="number" id="mf" value="0.0020" step="0.0001" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="price-val" class="block text-xs font-semibold text-[var(--ink)]">1. Asset Purchase Price ($)</label>
+      <input type="number" id="price-val" value="30000" min="1000" step="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="term-yrs" class="block text-[var(--ink-soft)] mb-1">Lease Term (Years)</label>
+        <input type="number" id="term-yrs" value="3" min="1" max="10" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="money-factor" class="block text-[var(--ink-soft)] mb-1">Lease Rate / Money Factor (%)</label>
+        <input type="number" id="money-factor" value="6.0" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="residual-val" class="block text-[var(--ink-soft)] mb-1">Residual Value ($)</label>
+        <input type="number" id="residual-val" value="16000" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="tax-rate" class="block text-[var(--ink-soft)] mb-1">Sales Tax (%)</label>
+        <input type="number" id="tax-rate" value="7.0" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Depreciation Portion:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Finance Portion:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Depreciation Fee Component:</span><span id="res-p1" class="font-bold text-white">$0.00/mo</span></div>
+    <div class="flex justify-between"><span>Finance Rent Charge:</span><span id="res-p2" class="font-bold text-white">$0.00/mo</span></div>
+    <div class="flex justify-between"><span>Monthly Sales Tax:</span><span id="res-p3" class="font-bold text-white">$0.00/mo</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Net Lease Outflow (Full Term):</span><span id="res-p4" class="text-emerald-200">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Lease Payment Structure" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Generic Lease Payment = Depreciation Fee + Finance Fee.</p>
+    <p>Depreciation Fee = (Price - Residual) / Term. Rent Charge = (Price + Residual) × Money Factor.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$20,000 asset with $8,000 residual over 24 months at 0.0020 money factor = ~$556/mo.</p>
+    <p>$30,000 asset with $16,000 residual value over 3 years at 6.0% rate requires $447.22/month total lease payment ($16,100 total term outflow).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const cost = parseFloat(document.getElementById('cost').value || '20000');
-      const res = parseFloat(document.getElementById('res').value || '8000');
-      const term = parseInt(document.getElementById('term').value || '24');
-      const mf = parseFloat(document.getElementById('mf').value || '0.0020');
-      const dep = (cost - res) / term;
-      const fin = (cost + res) * mf;
-      const pmt = dep + fin;
-      document.getElementById('hero-result-value').textContent = formatCurrency(pmt);
-      document.getElementById('res-p1').textContent = formatCurrency(dep) + '/mo';
-      document.getElementById('res-p2').textContent = formatCurrency(fin) + '/mo';
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Depreciation Fee', 'Finance Charge'], [dep, fin]);
-    
+      const price = parseFloat((document.getElementById('price-val') as HTMLInputElement)?.value || '30000');
+      const termYrs = parseInt((document.getElementById('term-yrs') as HTMLInputElement)?.value || '3');
+      const ratePct = parseFloat((document.getElementById('money-factor') as HTMLInputElement)?.value || '6.0');
+      const residual = parseFloat((document.getElementById('residual-val') as HTMLInputElement)?.value || '16000');
+      const taxRate = parseFloat((document.getElementById('tax-rate') as HTMLInputElement)?.value || '7.0') / 100;
+
+      const months = termYrs * 12;
+      const moneyFactor = (ratePct / 100) / 24;
+
+      const monthlyDeprec = (price - residual) / months;
+      const monthlyFinance = (price + residual) * moneyFactor;
+      const subtotalPmt = monthlyDeprec + monthlyFinance;
+      const monthlyTax = subtotalPmt * taxRate;
+
+      const totalMonthlyLease = subtotalPmt + monthlyTax;
+      const totalTermOutflow = totalMonthlyLease * months;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(totalMonthlyLease);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(monthlyDeprec) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(monthlyFinance) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(monthlyTax) + '/mo';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalTermOutflow);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Asset Depreciation Fee', 'Finance Rent Charge', 'Sales Tax'], [monthlyDeprec * months, monthlyFinance * months, monthlyTax * months]);
+      }
     } catch (err) {
       console.error(err);
     }

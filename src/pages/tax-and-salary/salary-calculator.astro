@@ -5,41 +5,104 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Salary Calculator"
-  description="Convert hourly wage to annual salary."
+  description="Convert your wage or salary across all pay period frequencies (Hourly, Daily, Weekly, Bi-weekly, Monthly, Annual)."
   category="Tax & Salary"
   categoryHref="/#tax-and-salary"
-  resultLabel="Annual Salary Equivalent"
+  resultLabel="Equivalent Annual Salary"
   resultSuffix="/yr"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Hourly Wage ($)</label><input type="number" id="wage" value="35" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="amount-val" class="block text-xs font-semibold text-[var(--ink)]">1. Salary / Wage Amount ($)</label>
+      <input type="number" id="amount-val" value="75000" min="1" step="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="freq-select" class="block text-[var(--ink-soft)] mb-1">Input Pay Frequency</label>
+        <select id="freq-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="annual" selected>Annual ($/yr)</option>
+          <option value="monthly">Monthly ($/mo)</option>
+          <option value="biweekly">Bi-weekly (26/yr)</option>
+          <option value="weekly">Weekly ($/wk)</option>
+          <option value="daily">Daily ($/day)</option>
+          <option value="hourly">Hourly ($/hr)</option>
+        </select>
+      </div>
+      <div>
+        <label for="hours-week" class="block text-[var(--ink-soft)] mb-1">Hours / Week</label>
+        <input type="number" id="hours-week" value="40" min="1" max="80" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="days-week" class="block text-[var(--ink-soft)] mb-1">Days / Week</label>
+        <input type="number" id="days-week" value="5" min="1" max="7" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="vacation-wks" class="block text-[var(--ink-soft)] mb-1">Unpaid Vacation (Wks/yr)</label>
+        <input type="number" id="vacation-wks" value="0" min="0" max="15" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Monthly Gross:</span><span id="res-p1" class="font-bold text-white">$6,066.67</span></div><div class="flex justify-between"><span>Weekly Gross:</span><span id="res-p2" class="font-bold text-emerald-200">$1,400.00</span></div>
+    <div class="flex justify-between"><span>Equivalent Hourly Wage:</span><span id="res-p1" class="font-bold text-white">$0.00/hr</span></div>
+    <div class="flex justify-between"><span>Equivalent Weekly Wage:</span><span id="res-p2" class="font-bold text-white">$0.00/wk</span></div>
+    <div class="flex justify-between"><span>Equivalent Bi-Weekly Paycheck:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Equivalent Monthly Income:</span><span id="res-p4">$0.00/mo</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Monthly Salary Distribution" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Annual = Hourly Rate × 40 hrs × 52 wks.</p>
+    <p>Annual Salary = Hourly Rate * Hours/Week * (52 − Vacation Weeks). Converts seamlessly across all pay periods.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$35.00/hr at 40 hrs/wk = $72,800/year.</p>
+    <p>$75,000 annual salary at 40 hours/week equals $36.06/hour, $1,442.31/week, $2,884.62 bi-weekly, and $6,250.00/month.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = '$72,800.00'; (document.getElementById('res-p1') as HTMLElement).textContent = '$6,066.67/mo'; (document.getElementById('res-p2') as HTMLElement).textContent = '$1,400.00/wk'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Monthly Gross', 'Weekly x4'], [6066.67, 5600]);
+      const amount = parseFloat((document.getElementById('amount-val') as HTMLInputElement)?.value || '75000');
+      const freq = (document.getElementById('freq-select') as HTMLSelectElement)?.value || 'annual';
+      const hoursWk = parseFloat((document.getElementById('hours-week') as HTMLInputElement)?.value || '40');
+      const daysWk = parseFloat((document.getElementById('days-week') as HTMLInputElement)?.value || '5');
+      const vacWks = parseFloat((document.getElementById('vacation-wks') as HTMLInputElement)?.value || '0');
+
+      const workingWks = Math.max(1, 52 - vacWks);
+
+      let annualSalary = amount;
+      if (freq === 'monthly') annualSalary = amount * 12;
+      else if (freq === 'biweekly') annualSalary = amount * 26;
+      else if (freq === 'weekly') annualSalary = amount * workingWks;
+      else if (freq === 'daily') annualSalary = amount * daysWk * workingWks;
+      else if (freq === 'hourly') annualSalary = amount * hoursWk * workingWks;
+
+      const hourlyWage = annualSalary / (hoursWk * workingWks);
+      const weeklyWage = annualSalary / workingWks;
+      const biweeklyPay = annualSalary / 26;
+      const monthlyIncome = annualSalary / 12;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(annualSalary);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(hourlyWage) + '/hr';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(weeklyWage) + '/wk';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(biweeklyPay);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(monthlyIncome) + '/mo';
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Bi-Weekly Paycheck 1', 'Bi-Weekly Paycheck 2'], [biweeklyPay, biweeklyPay]);
+      }
     } catch (err) {
       console.error(err);
     }

@@ -5,57 +5,87 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Sales Tax Calculator"
-  description="Add sales tax to price or back-calculate pre-tax price."
-  category="Other Financial Tools"
+  description="Calculate total price including sales tax or reverse solve price before tax from a total receipt amount."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Total Price with Tax"
-  resultSuffix=""
+  resultLabel="Total Price After Sales Tax"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Pre-Tax Price ($)</label><input type="number" id="price" value="100" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Sales Tax Rate (%)</label><input type="number" id="taxRate" value="8.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <label for="tax-mode" class="block font-semibold text-[var(--ink)]">Calculation Mode</label>
+      <select id="tax-mode" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="add" selected>Add Sales Tax (Pre-tax price -> Total price)</option>
+        <option value="remove">Remove Sales Tax (Total price -> Pre-tax price)</option>
+      </select>
+    </div>
+
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="price-val" class="block text-xs font-semibold text-[var(--ink)]">1. Amount ($)</label>
+      <input type="number" id="price-val" value="150" min="1" step="5" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="rate-val" class="block text-[var(--ink-soft)] mb-1">Sales Tax Rate (%)</label>
+        <input type="number" id="rate-val" value="8.25" min="0" max="25" step="0.05" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Sales Tax Amount:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Pre-Tax Subtotal:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Price Before Tax (Net Amount):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Sales Tax Amount Owed:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Price After Tax (Gross Amount):</span><span id="res-p3">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Receipt Cost Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Total = Price × (1 + Tax Rate). Test value: $100 price + 8% tax = $108.00 total.</p>
+    <p>Add Tax: Total = Price * (1 + Rate). Remove Tax: Net Price = Total / (1 + Rate).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$100 price with 8% sales tax results in $108.00 total ($8.00 tax).</p>
+    <p>$150 price before tax at 8.25% sales tax rate incurs $12.38 tax, bringing the total checkout price to $162.38.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const price = parseFloat(document.getElementById('price').value || '100');
-      const taxRate = parseFloat(document.getElementById('taxRate').value || '8.0');
-      const tax = price * (taxRate / 100);
-      const total = price + tax;
-      document.getElementById('hero-result-value').textContent = formatCurrency(total);
-      document.getElementById('res-p1').textContent = formatCurrency(tax);
-      document.getElementById('res-p2').textContent = formatCurrency(price);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Pre-Tax Price', 'Sales Tax'], [price, tax]);
-    
+      const mode = (document.getElementById('tax-mode') as HTMLSelectElement)?.value || 'add';
+      const inputAmount = parseFloat((document.getElementById('price-val') as HTMLInputElement)?.value || '150');
+      const rate = parseFloat((document.getElementById('rate-val') as HTMLInputElement)?.value || '8.25');
+
+      const rDecimal = rate / 100;
+      let netPrice = 0;
+      let taxAmount = 0;
+      let grossPrice = 0;
+
+      if (mode === 'add') {
+        netPrice = inputAmount;
+        taxAmount = netPrice * rDecimal;
+        grossPrice = netPrice + taxAmount;
+      } else {
+        grossPrice = inputAmount;
+        netPrice = grossPrice / (1 + rDecimal);
+        taxAmount = grossPrice - netPrice;
+      }
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(grossPrice);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(netPrice);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(taxAmount);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(grossPrice);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Price Before Tax', 'Sales Tax Owed'], [netPrice, taxAmount]);
+      }
     } catch (err) {
       console.error(err);
     }

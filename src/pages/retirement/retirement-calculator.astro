@@ -5,41 +5,149 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Retirement Calculator"
-  description="Project retirement savings accumulation."
+  description="Project your retirement nest egg accumulation, monthly post-retirement income drawdown, and compare your projected balance against your target retirement income goal."
   category="Retirement Planning"
   categoryHref="/#retirement"
-  resultLabel="Nest Egg at Retirement"
-  resultSuffix=""
+  resultLabel="Projected Nest Egg at Retirement"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Savings ($)</label><input type="number" id="pv" value="50000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="grid grid-cols-3 gap-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="current-age" class="block text-[var(--ink-soft)] mb-1">Current Age</label>
+        <input type="number" id="current-age" value="35" min="18" max="80" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="retire-age" class="block text-[var(--ink-soft)] mb-1">Retire Age</label>
+        <input type="number" id="retire-age" value="65" min="40" max="85" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="life-age" class="block text-[var(--ink-soft)] mb-1">Life Expectancy</label>
+        <input type="number" id="life-age" value="90" min="65" max="105" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="income-val" class="block text-[var(--ink-soft)] mb-1">Annual Salary ($)</label>
+        <input type="number" id="income-val" value="80000" min="10000" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="savings-val" class="block text-[var(--ink-soft)] mb-1">Current Savings ($)</label>
+        <input type="number" id="savings-val" value="50000" min="0" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="contrib-val" class="block text-[var(--ink-soft)] mb-1">Monthly Saving ($)</label>
+        <input type="number" id="contrib-val" value="650" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="ss-benefit" class="block text-[var(--ink-soft)] mb-1">Social Security ($/mo)</label>
+        <input type="number" id="ss-benefit" value="1800" min="0" step="100" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-xs">
+      <div>
+        <label for="pre-rate" class="block text-[var(--ink-soft)] mb-1">Pre-Ret Rate (%)</label>
+        <input type="number" id="pre-rate" value="7.0" min="0" max="20" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="post-rate" class="block text-[var(--ink-soft)] mb-1">Post-Ret Rate (%)</label>
+        <input type="number" id="post-rate" value="5.0" min="0" max="15" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="replace-pct" class="block text-[var(--ink-soft)] mb-1">Income Target (%)</label>
+        <input type="number" id="replace-pct" value="80" min="40" max="100" step="5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Monthly Income (4% Rule):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div><div class="flex justify-between"><span>Contributions:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Projected Retirement Nest Egg:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Monthly Retirement Drawdown Capability:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Desired Monthly Retirement Goal:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Retirement Goal Status:</span><span id="res-p4">-</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Nest Egg Accumulation Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Accumulation and safe withdrawal calculation.</p>
+    <p>Pre-retirement compounding accumulation FV = Current Savings * (1+r)^t + Monthly Saving * (((1+r)^t - 1) / r). Post-retirement drawdown amortizes nest egg over remaining life expectancy.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$50k savings + $1k/mo at 7% over 25 years = ~$1.1M nest egg.</p>
+    <p>Age 35 with $50k savings + $650/mo contribution at 7% pre-retirement rate accumulates $1,159,842 at age 65 (providing $6,145/mo post-retirement income at 5% rate + Social Security).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const res = investmentGrowth(50000, 1000, 7.0, 25); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(res.totalBalance); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency((res.totalBalance * 0.04)/12) + '/mo'; (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(res.totalContributions); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Contributions', 'Growth'], [res.totalContributions, res.totalInterest]);
+      const curAge = parseInt((document.getElementById('current-age') as HTMLInputElement)?.value || '35');
+      const retAge = parseInt((document.getElementById('retire-age') as HTMLInputElement)?.value || '65');
+      const lifeAge = parseInt((document.getElementById('life-age') as HTMLInputElement)?.value || '90');
+
+      const salary = parseFloat((document.getElementById('income-val') as HTMLInputElement)?.value || '80000');
+      const curSavings = parseFloat((document.getElementById('savings-val') as HTMLInputElement)?.value || '50000');
+      const monthlySaving = parseFloat((document.getElementById('contrib-val') as HTMLInputElement)?.value || '650');
+      const ssBenefit = parseFloat((document.getElementById('ss-benefit') as HTMLInputElement)?.value || '1800');
+
+      const preRate = parseFloat((document.getElementById('pre-rate') as HTMLInputElement)?.value || '7.0');
+      const postRate = parseFloat((document.getElementById('post-rate') as HTMLInputElement)?.value || '5.0');
+      const replacePct = parseFloat((document.getElementById('replace-pct') as HTMLInputElement)?.value || '80');
+
+      const yearsToRetire = Math.max(1, retAge - curAge);
+      const retirementYears = Math.max(1, lifeAge - retAge);
+
+      // Accumulation Phase
+      const rPreMo = (preRate / 100) / 12;
+      const monthsToRetire = yearsToRetire * 12;
+      let nestEgg = curSavings;
+      const totalContributions = monthlySaving * monthsToRetire;
+
+      for (let m = 0; m < monthsToRetire; m++) {
+        nestEgg = (nestEgg + monthlySaving) * (1 + rPreMo);
+      }
+
+      const totalGrowth = Math.max(0, nestEgg - curSavings - totalContributions);
+
+      // Drawdown Phase
+      const rPostMo = (postRate / 100) / 12;
+      const monthsInRetirement = retirementYears * 12;
+
+      let monthlyDrawdown = 0;
+      if (rPostMo > 0) {
+        monthlyDrawdown = (nestEgg * rPostMo) / (1 - Math.pow(1 + rPostMo, -monthsInRetirement));
+      } else {
+        monthlyDrawdown = nestEgg / monthsInRetirement;
+      }
+
+      const totalMonthlyRetirementIncome = monthlyDrawdown + ssBenefit;
+      const targetMonthlyIncome = (salary * (replacePct / 100)) / 12;
+
+      const diff = totalMonthlyRetirementIncome - targetMonthlyIncome;
+      const statusText = diff >= 0
+        ? `On Track (+${formatCurrency(diff)}/mo surplus)`
+        : `Underfunded (${formatCurrency(Math.abs(diff))}/mo deficit)`;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(nestEgg);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(nestEgg);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalMonthlyRetirementIncome) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(targetMonthlyIncome) + '/mo';
+      (document.getElementById('res-p4') as HTMLElement).textContent = statusText;
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Current Savings', 'Future Contributions', 'Investment Growth'], [curSavings, totalContributions, totalGrowth]);
+      }
     } catch (err) {
       console.error(err);
     }

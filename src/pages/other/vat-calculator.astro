@@ -4,58 +4,105 @@ import ResultChart from '../../components/ResultChart.astro';
 ---
 
 <CalculatorShell
-  title="VAT Calculator"
-  description="Add Value-Added Tax (VAT) to net price or extract VAT from gross total."
-  category="Other Financial Tools"
+  title="VAT Calculator (Value Added Tax)"
+  description="Calculate Value Added Tax (VAT) additions or extract VAT from gross prices across European, UK, and global tax rates."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Gross Price (incl. VAT)"
-  resultSuffix=""
+  resultLabel="Total Price (Gross Amount Including VAT)"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Net Subtotal ($)</label><input type="number" id="net" value="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">VAT Rate (%)</label><input type="number" id="vatPct" value="20.0" step="0.5" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <label for="vat-mode" class="block font-semibold text-[var(--ink)]">Calculation Direction</label>
+      <select id="vat-mode" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="add" selected>Add VAT (Net Price -> Gross Price)</option>
+        <option value="remove">Remove VAT (Gross Price -> Net Price)</option>
+      </select>
+    </div>
+
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="amount-val" class="block text-xs font-semibold text-[var(--ink)]">1. Amount ($ / € / £)</label>
+      <input type="number" id="amount-val" value="200" min="1" step="10" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="vat-preset" class="block text-[var(--ink-soft)] mb-1">Standard VAT Rates</label>
+        <select id="vat-preset" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="20" selected>UK / EU Standard (20%)</option>
+          <option value="19">Germany / Romania (19%)</option>
+          <option value="21">Spain / Netherlands (21%)</option>
+          <option value="5">Reduced Rate (5%)</option>
+          <option value="custom">Custom Rate</option>
+        </select>
+      </div>
+      <div>
+        <label for="vat-rate" class="block text-[var(--ink-soft)] mb-1">VAT Rate (%)</label>
+        <input type="number" id="vat-rate" value="20.0" min="0" max="40" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>VAT Amount:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Net Subtotal:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Net Price (Excluding VAT):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>VAT Amount Owed:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Gross Price (Including VAT):</span><span id="res-p3">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="VAT Cost Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Gross Price = Net Price × (1 + VAT%). Tax = Net Price × VAT%.</p>
+    <p>Add VAT: Gross = Net × (1 + VAT%). Remove VAT: Net = Gross / (1 + VAT%).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Net price $500 with 20% VAT yields $600 gross price ($100 VAT).</p>
+    <p>$200 net price at 20% VAT adds $40.00 VAT, bringing the total gross price to $240.00.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const net = parseFloat(document.getElementById('net').value || '500');
-      const vatPct = parseFloat(document.getElementById('vatPct').value || '20.0');
-      const vatAmt = net * (vatPct / 100);
-      const gross = net + vatAmt;
-      document.getElementById('hero-result-value').textContent = formatCurrency(gross);
-      document.getElementById('res-p1').textContent = formatCurrency(vatAmt);
-      document.getElementById('res-p2').textContent = formatCurrency(net);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Net Subtotal', 'VAT Amount'], [net, vatAmt]);
-    
+      const mode = (document.getElementById('vat-mode') as HTMLSelectElement)?.value || 'add';
+      const inputAmount = parseFloat((document.getElementById('amount-val') as HTMLInputElement)?.value || '200');
+      const preset = (document.getElementById('vat-preset') as HTMLSelectElement)?.value;
+      const rateInput = document.getElementById('vat-rate') as HTMLInputElement;
+
+      if (preset !== 'custom' && rateInput) {
+        rateInput.value = preset;
+      }
+
+      const rate = parseFloat(rateInput?.value || '20.0');
+      const rDecimal = rate / 100;
+
+      let netPrice = 0;
+      let vatAmount = 0;
+      let grossPrice = 0;
+
+      if (mode === 'add') {
+        netPrice = inputAmount;
+        vatAmount = netPrice * rDecimal;
+        grossPrice = netPrice + vatAmount;
+      } else {
+        grossPrice = inputAmount;
+        netPrice = grossPrice / (1 + rDecimal);
+        vatAmount = grossPrice - netPrice;
+      }
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(grossPrice);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(netPrice);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(vatAmount);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(grossPrice);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Price', 'VAT Amount'], [netPrice, vatAmount]);
+      }
     } catch (err) {
       console.error(err);
     }

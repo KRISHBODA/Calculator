@@ -5,41 +5,106 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Marriage Tax Calculator"
-  description="Calculate joint vs separate filing difference."
+  description="Compare combined income tax owed under Married Filing Jointly vs filing separately as two Single individuals to calculate your exact Marriage Tax Penalty or Marriage Tax Bonus."
   category="Tax & Salary"
   categoryHref="/#tax-and-salary"
-  resultLabel="Marriage Bonus Amount"
+  resultLabel="Marriage Tax Benefit / Penalty"
   resultSuffix=""
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Spouse 1 Income ($)</label><input type="number" id="inc1" value="80000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="spouse1-val" class="block text-[var(--ink-soft)] mb-1">Spouse 1 Income ($/yr)</label>
+        <input type="number" id="spouse1-val" value="80000" min="0" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="spouse2-val" class="block text-[var(--ink-soft)] mb-1">Spouse 2 Income ($/yr)</label>
+        <input type="number" id="spouse2-val" value="60000" min="0" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="pretax-val" class="block text-[var(--ink-soft)] mb-1">Combined Deductions ($)</label>
+        <input type="number" id="pretax-val" value="0" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="state-rate" class="block text-[var(--ink-soft)] mb-1">State Tax Rate (%)</label>
+        <input type="number" id="state-rate" value="5.0" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Joint Filing Tax:</span><span id="res-p1" class="font-bold text-white">$12,400.00</span></div><div class="flex justify-between"><span>Separate Filing Combined Tax:</span><span id="res-p2" class="font-bold text-emerald-200">$13,600.00</span></div>
+    <div class="flex justify-between"><span>Combined Tax (Married Filing Jointly):</span><span id="res-p1" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Combined Tax (2 Single Returns):</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Spouse 1 Individual Tax (Single):</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Spouse 2 Individual Tax (Single):</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Married Jointly vs 2 Single Returns Tax" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Joint tax comparison.</p>
+    <p>Marriage Tax Bonus occurs when one spouse earns significantly more than the other, shifting income into lower tax brackets. Marriage Penalty occurs when high earners hit bracket ceilings.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$80k + $40k incomes yield ~$1,200 marriage bonus.</p>
+    <p>Spouse 1 ($80k) + Spouse 2 ($60k) equals $140k total. Filing jointly yields $17,040 federal tax vs $17,890 as two single returns (Marriage Bonus of $850 savings).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { applyProgressiveTax, formatCurrency } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024 } from '../../scripts/taxData.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = '$1,200.00'; (document.getElementById('res-p1') as HTMLElement).textContent = '$12,400.00'; (document.getElementById('res-p2') as HTMLElement).textContent = '$13,600.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Joint Tax', 'Separate Tax'], [12400, 13600]);
+      const s1 = parseFloat((document.getElementById('spouse1-val') as HTMLInputElement)?.value || '80000');
+      const s2 = parseFloat((document.getElementById('spouse2-val') as HTMLInputElement)?.value || '60000');
+      const pretax = parseFloat((document.getElementById('pretax-val') as HTMLInputElement)?.value || '0');
+      const stateRate = parseFloat((document.getElementById('state-rate') as HTMLInputElement)?.value || '5.0');
+
+      // 1. Married Jointly
+      const totalIncome = s1 + s2;
+      const marriedStd = STANDARD_DEDUCTION_2024.married;
+      const marriedTaxable = Math.max(0, totalIncome - pretax - marriedStd);
+      const marriedFedTax = applyProgressiveTax(marriedTaxable, TAX_BRACKETS_2024.married).totalTax;
+      const marriedStateTax = Math.max(0, totalIncome - pretax) * (stateRate / 100);
+      const marriedTotalTax = marriedFedTax + marriedStateTax;
+
+      // 2. Two Single Returns
+      const singleStd = STANDARD_DEDUCTION_2024.single;
+
+      const s1Taxable = Math.max(0, s1 - (pretax / 2) - singleStd);
+      const s1FedTax = applyProgressiveTax(s1Taxable, TAX_BRACKETS_2024.single).totalTax;
+      const s1StateTax = Math.max(0, s1 - (pretax / 2)) * (stateRate / 100);
+      const s1TotalTax = s1FedTax + s1StateTax;
+
+      const s2Taxable = Math.max(0, s2 - (pretax / 2) - singleStd);
+      const s2FedTax = applyProgressiveTax(s2Taxable, TAX_BRACKETS_2024.single).totalTax;
+      const s2StateTax = Math.max(0, s2 - (pretax / 2)) * (stateRate / 100);
+      const s2TotalTax = s2FedTax + s2StateTax;
+
+      const singleCombinedTotalTax = s1TotalTax + s2TotalTax;
+
+      const diff = marriedTotalTax - singleCombinedTotalTax;
+      const resultText = diff <= 0
+        ? `Marriage Bonus (Saves ${formatCurrency(Math.abs(diff))})`
+        : `Marriage Penalty (Costs ${formatCurrency(diff)} more)`;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = resultText;
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(marriedTotalTax);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(singleCombinedTotalTax);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(s1TotalTax);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(s2TotalTax);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Married Filing Jointly Tax', 'Combined 2 Single Returns Tax'], [marriedTotalTax, singleCombinedTotalTax]);
+      }
     } catch (err) {
       console.error(err);
     }

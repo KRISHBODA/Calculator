@@ -5,41 +5,81 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Annuity Payout Calculator"
-  description="Calculate recurring annuity payout amount."
+  description="Calculate fixed period annuity payout streams, guaranteed monthly income, and principal depletion schedule during retirement."
   category="Retirement Planning"
   categoryHref="/#retirement"
-  resultLabel="Monthly Payout"
+  resultLabel="Monthly Annuity Income"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Lump Sum ($)</label><input type="number" id="pv" value="200000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="capital-val" class="block text-xs font-semibold text-[var(--ink)]">1. Total Annuity Capital Balance ($)</label>
+      <input type="number" id="capital-val" value="250000" min="10000" step="10000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="years-val" class="block text-[var(--ink-soft)] mb-1">Payout Horizon (Years)</label>
+        <input type="number" id="years-val" value="20" min="1" max="40" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="rate-val" class="block text-[var(--ink-soft)] mb-1">Return Rate (%)</label>
+        <input type="number" id="rate-val" value="5.0" min="0.0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Annual Payout:</span><span id="res-p1" class="font-bold text-white">$15,838.92</span></div><div class="flex justify-between"><span>Lump Sum:</span><span id="res-p2" class="font-bold text-emerald-200">$200,000.00</span></div>
+    <div class="flex justify-between"><span>Guaranteed Monthly Payment:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Lifetime Payout Delivered:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Interest Generated in Payout:</span><span id="res-p3">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Annuity Payout Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>PMT = PV × r / (1 − (1+r)^−n).</p>
+    <p>Monthly Payout PMT = Capital * (r / (1 - (1+r)^(-n))). Amortizes principal balance to zero over the fixed payout horizon.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$200,000 at 5% over 20 years pays $1,319.91/month.</p>
+    <p>$250,000 annuity capital paid out over 20 years at 5.0% return delivers $1,649.89/month ($395,974 total payout delivered, $145,974 interest).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const pmt = amortizedPayment(200000, 5.0, 240); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(pmt); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(pmt * 12) + '/yr'; (document.getElementById('res-p2') as HTMLElement).textContent = '$200,000.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Principal', 'Interest Payout'], [200000, (pmt * 240) - 200000]);
+      const capital = parseFloat((document.getElementById('capital-val') as HTMLInputElement)?.value || '250000');
+      const yrs = parseInt((document.getElementById('years-val') as HTMLInputElement)?.value || '20');
+      const rate = parseFloat((document.getElementById('rate-val') as HTMLInputElement)?.value || '5.0');
+
+      const months = yrs * 12;
+      const rMo = (rate / 100) / 12;
+
+      let monthlyPmt = 0;
+      if (rMo > 0) {
+        monthlyPmt = (capital * rMo) / (1 - Math.pow(1 + rMo, -months));
+      } else {
+        monthlyPmt = capital / months;
+      }
+
+      const totalPayout = monthlyPmt * months;
+      const totalInterest = Math.max(0, totalPayout - capital);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(monthlyPmt);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(monthlyPmt) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalPayout);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterest);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Initial Capital Principal', 'Payout Interest Earned'], [capital, totalInterest]);
+      }
     } catch (err) {
       console.error(err);
     }

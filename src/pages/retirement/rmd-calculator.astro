@@ -4,42 +4,81 @@ import ResultChart from '../../components/ResultChart.astro';
 ---
 
 <CalculatorShell
-  title="RMD Calculator"
-  description="Calculate Required Minimum Distribution."
+  title="RMD Calculator (Required Minimum Distribution)"
+  description="Calculate mandatory IRS Required Minimum Distributions (RMD) from Traditional IRAs and 401(k) accounts based on official IRS Uniform Lifetime Table factors."
   category="Retirement Planning"
   categoryHref="/#retirement"
-  resultLabel="Annual Required Distribution"
-  resultSuffix="/yr"
+  resultLabel="Mandatory Annual RMD Amount"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Account Balance ($)</label><input type="number" id="bal" value="500000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="age-val" class="block text-[var(--ink-soft)] mb-1">Current Age (73+)</label>
+        <input type="number" id="age-val" value="75" min="73" max="115" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="balance-val" class="block text-[var(--ink-soft)] mb-1">Dec 31 Account Balance ($)</label>
+        <input type="number" id="balance-val" value="500000" min="1000" step="10000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-1 text-xs">
+      <label for="table-type" class="block font-semibold text-[var(--ink)] mb-1">IRS Life Expectancy Table</label>
+      <select id="table-type" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="uniform" selected>Uniform Lifetime Table (Standard Unmarried / Spouse <= 10 yrs younger)</option>
+        <option value="joint">Joint Life Table (Spouse > 10 yrs younger)</option>
+      </select>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Monthly RMD:</span><span id="res-p1" class="font-bold text-white">$1,572.33</span></div><div class="flex justify-between"><span>IRS Factor:</span><span id="res-p2" class="font-bold text-emerald-200">26.5</span></div>
+    <div class="flex justify-between"><span>IRS Distribution Period Factor:</span><span id="res-p1" class="font-bold text-white">24.6 years</span></div>
+    <div class="flex justify-between"><span>Mandatory Annual RMD Distribution:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Equivalent Monthly Distribution:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Remaining Account Balance After RMD:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Account Balance vs Mandatory RMD" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Note: RMD = Balance / IRS Lifetime Factor (e.g. 26.5 at age 73). Data changes with tax tables.</p>
+    <p>RMD = Dec 31 Account Balance / IRS Life Expectancy Factor. Failure to withdraw RMD triggers 25% IRS excise tax penalty.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$500,000 balance at age 73 = $18,867.92 RMD.</p>
+    <p>Age 75 with $500,000 IRA balance uses IRS Uniform factor 24.6, requiring a $20,325 annual minimum distribution ($1,694/mo).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
+  import { IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
 
   function update() {
     try {
-      const rmd = 500000 / 26.5; (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(rmd); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(rmd / 12) + '/mo'; (document.getElementById('res-p2') as HTMLElement).textContent = '26.5'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['RMD', 'Remaining Balance'], [rmd, 500000 - rmd]);
+      const age = parseInt((document.getElementById('age-val') as HTMLInputElement)?.value || '75');
+      const balance = parseFloat((document.getElementById('balance-val') as HTMLInputElement)?.value || '500000');
+
+      // Lookup IRS factor
+      const irsFactor = IRS_UNIFORM_LIFETIME_TABLE[age] || Math.max(2.0, 24.6 - (age - 75) * 0.8);
+
+      const annualRmd = balance / irsFactor;
+      const monthlyRmd = annualRmd / 12;
+      const remainingBalance = Math.max(0, balance - annualRmd);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(annualRmd);
+      (document.getElementById('res-p1') as HTMLElement).textContent = `${irsFactor.toFixed(1)} years`;
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(annualRmd);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(monthlyRmd) + '/mo';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(remainingBalance);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Remaining Tax-Deferred Balance', 'Mandatory Annual RMD'], [remainingBalance, annualRmd]);
+      }
     } catch (err) {
       console.error(err);
     }

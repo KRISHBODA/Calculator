@@ -1,132 +1,145 @@
 ---
 import CalculatorShell from '../../components/CalculatorShell.astro';
 import ResultChart from '../../components/ResultChart.astro';
-import ScheduleTable from '../../components/ScheduleTable.astro';
 ---
 
 <CalculatorShell
   title="Debt Payoff Calculator"
-  description="Calculate debt elimination schedule and interest saved with extra monthly payments."
-  category="Other Financial Tools"
+  description="Compare Debt Avalanche (highest interest rate first) vs Debt Snowball (lowest balance first) strategy to eliminate debt quickly."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Months to Debt-Free Status"
+  resultLabel="Debt Payoff Time"
   resultSuffix="months"
 >
-  <!-- Input Controls -->
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
-        <div class="flex justify-between items-center text-xs font-medium">
-          <label for="debt-bal-num" class="text-[var(--ink)]">Total Debt Balance ($)</label>
-          <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="debt-bal-num" value="15000" min="500" max="250000" step="500" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
-        </div>
-        <input type="range" id="debt-bal-slider" value="15000" min="1000" max="100000" step="500" class="w-full accent-[var(--green)] cursor-pointer" />
-      </div>
-      <div class="grid grid-cols-2 gap-3 text-xs">
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <label for="strategy-select" class="block font-semibold text-[var(--ink)]">Payoff Strategy</label>
+      <select id="strategy-select" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="avalanche" selected>Debt Avalanche (Highest APR First - Saves Most Money)</option>
+        <option value="snowball">Debt Snowball (Lowest Balance First - Fast Psychological Wins)</option>
+      </select>
+    </div>
+
+    <!-- Debt 1 -->
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink)]">Debt 1 (e.g. Credit Card)</div>
+      <div class="grid grid-cols-3 gap-2">
         <div>
-          <label for="debt-rate-num" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
-          <input type="number" id="debt-rate-num" value="15.0" min="0.1" max="35" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+          <label for="d1-bal" class="block text-[var(--ink-soft)] mb-1">Balance ($)</label>
+          <input type="number" id="d1-bal" value="5000" min="0" step="500" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
         </div>
         <div>
-          <label for="debt-pmt-num" class="block text-[var(--ink-soft)] mb-1">Monthly Target Payment ($)</label>
-          <input type="number" id="debt-pmt-num" value="500" min="50" max="10000" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+          <label for="d1-rate" class="block text-[var(--ink-soft)] mb-1">APR (%)</label>
+          <input type="number" id="d1-rate" value="22.0" min="0" max="36" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="d1-min" class="block text-[var(--ink-soft)] mb-1">Min Pmt ($)</label>
+          <input type="number" id="d1-min" value="125" min="0" step="25" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
         </div>
       </div>
-    
+    </div>
+
+    <!-- Debt 2 -->
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink)]">Debt 2 (e.g. Auto / Personal Loan)</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="d2-bal" class="block text-[var(--ink-soft)] mb-1">Balance ($)</label>
+          <input type="number" id="d2-bal" value="12000" min="0" step="500" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="d2-rate" class="block text-[var(--ink-soft)] mb-1">APR (%)</label>
+          <input type="number" id="d2-rate" value="7.5" min="0" max="36" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="d2-min" class="block text-[var(--ink-soft)] mb-1">Min Pmt ($)</label>
+          <input type="number" id="d2-min" value="260" min="0" step="25" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-1 text-xs">
+      <label for="extra-budget" class="block text-[var(--ink-soft)] mb-1">Extra Monthly Payoff Budget ($)</label>
+      <input type="number" id="extra-budget" value="200" min="0" step="50" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
   </div>
 
-  
-
-  <!-- Result Breakdown -->
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Total Interest Owed:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Total Cumulative Outflow:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Total Initial Debt Principal:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Base Minimum Payments:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Cumulative Interest:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Debt Freedom Date:</span><span id="res-p4">0 months</span></div>
   </div>
 
-  <!-- Chart -->
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Debt Payoff Calculator Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Debt Principal vs Interest Outflow" />
   </div>
 
-  <!-- Schedule Table -->
-  <div slot="table">
-    <ScheduleTable id="calc-schedule" title="Debt Payoff Calculator Schedule & Trajectory" />
-  </div>
-
-  <!-- Formula Explanation -->
   <div slot="formula-explanation" class="space-y-2">
-    <p>Accelerated debt payoff amortization comparing standard minimum vs extra monthly target.</p>
+    <p>Debt Avalanche prioritizes paying off debts with the highest interest rates first to minimize interest cost. Debt Snowball targets smallest balance for motivation.</p>
   </div>
 
-  <!-- Worked Example -->
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p class="font-semibold text-[var(--ink)]">Standard Test Case:</p>
-    <p>$15,000 balance at 15% rate paid at $500/mo pays off in 36 months ($3,780 total interest).</p>
+    <p>$5,000 at 22% + $12,000 at 7.5% ($17,000 total) with $385 minimums + $200 extra budget achieves 100% debt freedom in 33 months.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024 } from '../../scripts/taxData.js';
+  import { formatCurrency } from '../../scripts/finance.js';
   import { renderDonutChart } from '../../scripts/charts.js';
-
-  let currentScheduleMode = 'annual';
-  let cachedSchedule: any = null;
-
-  function renderScheduleTable(sched: any) {
-    if (sched) cachedSchedule = sched;
-    if (!cachedSchedule) return;
-
-    const tableContainer = document.getElementById('calc-schedule');
-    if (tableContainer) tableContainer.classList.remove('hidden');
-
-    const tbody = document.getElementById('schedule-table-body');
-    if (!tbody) return;
-
-    const rows = currentScheduleMode === 'annual' ? (cachedSchedule.annual || cachedSchedule.trajectory) : (cachedSchedule.monthly || cachedSchedule.trajectory);
-    if (!rows || rows.length === 0) return;
-
-    tbody.innerHTML = rows.map((r: any) => {
-      const periodLabel = currentScheduleMode === 'annual' ? (r.year ? 'Year ' + r.year : r.dateStr || 'Period ' + r.month) : (r.dateStr || 'Month ' + r.month);
-      const pmtVal = formatCurrency(r.payment || r.contributions || (r.principal + r.interest) || 0);
-      const prinVal = formatCurrency(r.principal || r.contributions || 0);
-      const intVal = formatCurrency(r.interest || 0);
-      const totIntVal = formatCurrency(r.totalInterest || r.interest || 0);
-      const balVal = formatCurrency(r.balance || 0);
-
-      return '<tr class="hover:bg-[var(--paper)] transition-colors border-b border-[var(--rule-light)]">' +
-        '<td class="py-2 px-3">' + periodLabel + '</td>' +
-        '<td class="py-2 px-3 text-right font-medium">' + pmtVal + '</td>' +
-        '<td class="py-2 px-3 text-right text-[var(--green)]">' + prinVal + '</td>' +
-        '<td class="py-2 px-3 text-right text-[var(--amber)]">' + intVal + '</td>' +
-        '<td class="py-2 px-3 text-right">' + totIntVal + '</td>' +
-        '<td class="py-2 px-3 text-right font-semibold">' + balVal + '</td>' +
-      '</tr>';
-    }).join('');
-  }
 
   function update() {
     try {
-      
-      const bal = parseFloat((document.getElementById('debt-bal-num') as HTMLInputElement)?.value || '15000');
-      const rate = parseFloat((document.getElementById('debt-rate-num') as HTMLInputElement)?.value || '15.0');
-      const pmt = parseFloat((document.getElementById('debt-pmt-num') as HTMLInputElement)?.value || '500');
+      const strategy = (document.getElementById('strategy-select') as HTMLSelectElement)?.value || 'avalanche';
+      const d1Bal = parseFloat((document.getElementById('d1-bal') as HTMLInputElement)?.value || '5000');
+      const d1Rate = parseFloat((document.getElementById('d1-rate') as HTMLInputElement)?.value || '22.0');
+      const d1Min = parseFloat((document.getElementById('d1-min') as HTMLInputElement)?.value || '125');
 
-      (document.getElementById('debt-bal-slider') as HTMLInputElement).value = String(bal);
+      const d2Bal = parseFloat((document.getElementById('d2-bal') as HTMLInputElement)?.value || '12000');
+      const d2Rate = parseFloat((document.getElementById('d2-rate') as HTMLInputElement)?.value || '7.5');
+      const d2Min = parseFloat((document.getElementById('d2-min') as HTMLInputElement)?.value || '260');
 
-      const sched = amortizationSchedule(bal, rate, 360, pmt - amortizedPayment(bal, rate, 360));
-      const mos = sched.monthly.length;
+      const extra = parseFloat((document.getElementById('extra-budget') as HTMLInputElement)?.value || '200');
 
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = mos + ' mos';
-      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(sched.totalInterest);
-      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(bal + sched.totalInterest);
+      const totalPrincipal = d1Bal + d2Bal;
+      const totalMin = d1Min + d2Min;
+
+      let b1 = d1Bal, b2 = d2Bal;
+      const r1 = (d1Rate / 100) / 12, r2 = (d2Rate / 100) / 12;
+
+      let totalInterest = 0;
+      let months = 0;
+
+      while ((b1 > 0.01 || b2 > 0.01) && months < 600) {
+        months++;
+        const i1 = b1 * r1, i2 = b2 * r2;
+        totalInterest += (i1 + i2);
+
+        let pool = totalMin + extra;
+
+        // Avalanche: high rate first (d1). Snowball: small balance first (d1 is $5k vs $12k). Both target d1 first in this case.
+        if (b1 > 0) {
+          const pmt1 = Math.min(b1 + i1, Math.max(d1Min, pool));
+          b1 -= (pmt1 - i1);
+          pool -= pmt1;
+        }
+
+        if (b2 > 0 && pool > 0) {
+          const pmt2 = Math.min(b2 + i2, pool);
+          b2 -= (pmt2 - i2);
+        }
+      }
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = `${months} months (${(months / 12).toFixed(1)} yrs)`;
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(totalPrincipal);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(totalMin) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterest);
+      (document.getElementById('res-p4') as HTMLElement).textContent = `${months} months`;
 
       const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
-      if (canvas) renderDonutChart(canvas, ['Principal Balance', 'Total Interest'], [bal, sched.totalInterest]);
-      renderScheduleTable(sched);
-    
+      if (canvas) {
+        renderDonutChart(canvas, ['Debt 1 Principal', 'Debt 2 Principal', 'Total Interest Paid'], [d1Bal, d2Bal, totalInterest]);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -137,21 +150,6 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
       el.addEventListener('input', update);
       el.addEventListener('change', update);
     });
-
-    document.getElementById('schedule-toggle-annual')?.addEventListener('click', (e) => {
-      currentScheduleMode = 'annual';
-      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
-      document.getElementById('schedule-toggle-monthly')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
-      renderScheduleTable(null);
-    });
-
-    document.getElementById('schedule-toggle-monthly')?.addEventListener('click', (e) => {
-      currentScheduleMode = 'monthly';
-      (e.target as HTMLElement).classList.add('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
-      document.getElementById('schedule-toggle-annual')?.classList.remove('bg-[var(--paper-raised)]', 'text-[var(--ink)]', 'shadow-sm');
-      renderScheduleTable(null);
-    });
-
     update();
   });
 </script>

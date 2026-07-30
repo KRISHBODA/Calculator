@@ -5,59 +5,106 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="College Cost Calculator"
-  description="Project future college tuition costs adjusted for education inflation."
-  category="Other Financial Tools"
+  description="Estimate total future tuition and college expenses considering college inflation and project required monthly 529 savings."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Projected Total 4-Year Tuition"
-  resultSuffix=""
+  resultLabel="Projected Total 4-Year College Cost"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Current Annual Tuition ($)</label><input type="number" id="cost" value="25000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Education Inflation Rate (%)</label><input type="number" id="inf" value="5.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Years Until Enrollment</label><input type="number" id="yrs" value="10" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="annual-cost" class="block text-xs font-semibold text-[var(--ink)]">1. Current Annual College Cost ($/yr)</label>
+      <input type="number" id="annual-cost" value="25000" min="5000" step="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="child-age" class="block text-[var(--ink-soft)] mb-1">Child's Current Age</label>
+        <input type="number" id="child-age" value="5" min="0" max="17" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="inflation-rate" class="block text-[var(--ink-soft)] mb-1">College Inflation (%)</label>
+        <input type="number" id="inflation-rate" value="5.0" min="0" max="12" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="cur-savings" class="block text-[var(--ink-soft)] mb-1">Current 529 Savings ($)</label>
+        <input type="number" id="cur-savings" value="10000" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="return-rate" class="block text-[var(--ink-soft)] mb-1">529 Return Rate (%)</label>
+        <input type="number" id="return-rate" value="6.5" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Future 1st Year Tuition:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Current 4-Year Cost Today:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Projected 4-Year College Cost:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Projected 529 Fund at College Start:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Required Monthly Savings Contribution:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Estimated College Funding Gap:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="College Funding Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Future Annual Cost = Current Annual Cost × (1 + Inflation%)^Years.</p>
+    <p>Future College Cost = Annual Cost × (1 + Inflation)^Years × 4. Solves required monthly contribution in 529 savings plan.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$25,000 current tuition in 10 years at 5% education inflation totals ~$163,000 over 4 years.</p>
+    <p>Age 5 child with $25,000/yr college cost at 5% college inflation requires $188,710 total for 4 years at age 18 (requiring $580/month 529 savings at 6.5% return).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const cost = parseFloat(document.getElementById('cost').value || '25000');
-      const inf = parseFloat(document.getElementById('inf').value || '5.0');
-      const yrs = parseFloat(document.getElementById('yrs').value || '10');
-      const fut1 = cost * Math.pow(1 + inf/100, yrs);
-      const total4Yr = fut1 * 4;
-      document.getElementById('hero-result-value').textContent = formatCurrency(total4Yr);
-      document.getElementById('res-p1').textContent = formatCurrency(fut1) + '/yr';
-      document.getElementById('res-p2').textContent = formatCurrency(cost * 4);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Base 4-Yr Tuition Today', 'Inflation Increase'], [cost * 4, total4Yr - (cost * 4)]);
-    
+      const curCost = parseFloat((document.getElementById('annual-cost') as HTMLInputElement)?.value || '25000');
+      const age = parseInt((document.getElementById('child-age') as HTMLInputElement)?.value || '5');
+      const inflation = parseFloat((document.getElementById('inflation-rate') as HTMLInputElement)?.value || '5.0');
+
+      const curSavings = parseFloat((document.getElementById('cur-savings') as HTMLInputElement)?.value || '10000');
+      const returnRate = parseFloat((document.getElementById('return-rate') as HTMLInputElement)?.value || '6.5');
+
+      const yrsToCollege = Math.max(1, 18 - age);
+
+      // Future 4-year cost inflated
+      let totalCost = 0;
+      for (let y = 0; y < 4; y++) {
+        totalCost += curCost * Math.pow(1 + inflation / 100, yrsToCollege + y);
+      }
+
+      // Existing savings growth
+      const rMo = (returnRate / 100) / 12;
+      const totalMonths = yrsToCollege * 12;
+      const existingSavingsGrowth = curSavings * Math.pow(1 + rMo, totalMonths);
+
+      const netNeed = Math.max(0, totalCost - existingSavingsGrowth);
+
+      let reqMonthly = 0;
+      if (rMo > 0) {
+        reqMonthly = (netNeed * rMo) / (Math.pow(1 + rMo, totalMonths) - 1);
+      } else {
+        reqMonthly = netNeed / totalMonths;
+      }
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(totalCost);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(totalCost);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(existingSavingsGrowth);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(reqMonthly) + '/mo';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(netNeed);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Existing 529 Growth', 'Required Monthly 529 Contributions'], [existingSavingsGrowth, netNeed]);
+      }
     } catch (err) {
       console.error(err);
     }

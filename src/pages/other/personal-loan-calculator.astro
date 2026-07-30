@@ -5,58 +5,83 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Personal Loan Calculator"
-  description="Calculate monthly payments for unsecured personal loans."
-  category="Other Financial Tools"
+  description="Calculate monthly personal loan payments, upfront origination fees, net funds delivered, and APR finance charges."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Monthly Payment"
+  resultLabel="Monthly Personal Loan Payment"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Personal Loan Amount ($)</label><input type="number" id="p" value="15000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Interest Rate (%)</label><input type="number" id="r" value="9.5" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Term (Years)</label><input type="number" id="yrs" value="3" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="amount-val" class="block text-xs font-semibold text-[var(--ink)]">1. Requested Loan Amount ($)</label>
+      <input type="number" id="amount-val" value="10000" min="1000" step="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="rate-val" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
+        <input type="number" id="rate-val" value="9.9" min="1.0" max="36" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="term-yrs" class="block text-[var(--ink-soft)] mb-1">Loan Term (Years)</label>
+        <input type="number" id="term-yrs" value="3" min="1" max="7" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-1 text-xs">
+      <label for="fee-pct" class="block text-[var(--ink-soft)] mb-1">Origination Fee (%)</label>
+      <input type="number" id="fee-pct" value="3.0" min="0" max="10" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Loan Principal:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Total Interest:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Monthly Payment:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Net Cash Delivered to Bank:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Upfront Origination Fee:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Outflow Cost:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Personal Loan Capital Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Standard amortized payment.</p>
+    <p>Monthly Payment M = P × [r(1+r)^n] / [(1+r)^n - 1]. Net cash delivered equals requested loan minus origination fee.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$15,000 personal loan at 9.5% over 3 years requires $480.49/month.</p>
+    <p>$10,000 personal loan at 9.9% interest over 3 years with 3% origination fee delivers $9,700 net cash and requires $322.25/month ($1,601 total interest).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { amortizedPayment, formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const p = parseFloat(document.getElementById('p').value || '15000');
-      const r = parseFloat(document.getElementById('r').value || '9.5');
-      const yrs = parseInt(document.getElementById('yrs').value || '3');
-      const pmt = amortizedPayment(p, r, yrs * 12);
-      document.getElementById('hero-result-value').textContent = formatCurrency(pmt);
-      document.getElementById('res-p1').textContent = formatCurrency(p);
-      document.getElementById('res-p2').textContent = formatCurrency((pmt * yrs * 12) - p);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Loan Amount', 'Total Interest'], [p, (pmt * yrs * 12) - p]);
-    
+      const p = parseFloat((document.getElementById('amount-val') as HTMLInputElement)?.value || '10000');
+      const rate = parseFloat((document.getElementById('rate-val') as HTMLInputElement)?.value || '9.9');
+      const termYrs = parseInt((document.getElementById('term-yrs') as HTMLInputElement)?.value || '3');
+      const feePct = parseFloat((document.getElementById('fee-pct') as HTMLInputElement)?.value || '3.0') / 100;
+
+      const months = termYrs * 12;
+      const monthlyPmt = amortizedPayment(p, rate, months);
+      const totalOutflow = monthlyPmt * months;
+      const totalInterest = totalOutflow - p;
+      const feeCost = p * feePct;
+      const netProceeds = p - feeCost;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(monthlyPmt);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(monthlyPmt) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(netProceeds);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(feeCost);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalOutflow);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Cash Delivered', 'Interest Paid', 'Upfront Fee'], [netProceeds, totalInterest, feeCost]);
+      }
     } catch (err) {
       console.error(err);
     }

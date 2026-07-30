@@ -5,61 +5,102 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Budget Calculator"
-  description="Track income vs expense categories according to 50/30/20 rule."
-  category="Other Financial Tools"
+  description="Audit your monthly income vs expense cash flow and evaluate your spending breakdown against the 50/30/20 financial rule of thumb."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Net Monthly Surplus / (Deficit)"
+  resultLabel="Net Monthly Cash Flow Surplus"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Gross Income ($)</label><input type="number" id="inc" value="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Essential Needs Expenses ($)</label><input type="number" id="needs" value="2500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Discretionary Wants ($)</label><input type="number" id="wants" value="1500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Savings / Investments ($)</label><input type="number" id="sav" value="1000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="income-val" class="block text-xs font-semibold text-[var(--ink)]">1. Net Monthly Take-Home Income ($)</label>
+      <input type="number" id="income-val" value="5000" min="500" step="250" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <!-- Essential Needs (50% target) -->
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink)]">Essential Needs (Target: 50%)</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="housing-val" class="block text-[var(--ink-soft)] mb-1">Housing ($)</label>
+          <input type="number" id="housing-val" value="1600" min="0" step="100" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="food-val" class="block text-[var(--ink-soft)] mb-1">Food/Utils ($)</label>
+          <input type="number" id="food-val" value="600" min="0" step="50" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="trans-val" class="block text-[var(--ink-soft)] mb-1">Trans/Car ($)</label>
+          <input type="number" id="trans-val" value="400" min="0" step="50" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Wants (30%) & Savings (20%) -->
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="wants-val" class="block text-[var(--ink-soft)] mb-1">Personal & Fun ($)</label>
+        <input type="number" id="wants-val" value="1100" min="0" step="100" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="savings-val" class="block text-[var(--ink-soft)] mb-1">Invest & Save ($)</label>
+        <input type="number" id="savings-val" value="900" min="0" step="100" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Total Outgoing Expenses:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
-      <div class="flex justify-between"><span>Total Monthly Income:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Essential Needs Spent:</span><span id="res-p1" class="font-bold text-white">$0.00 (52%)</span></div>
+    <div class="flex justify-between"><span>Personal Wants Spent:</span><span id="res-p2" class="font-bold text-white">$0.00 (22%)</span></div>
+    <div class="flex justify-between"><span>Savings & Investments:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00 (18%)</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>50/30/20 Rule Rating:</span><span id="res-p4">Balanced</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Monthly Budget Allocation" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Surplus = Total Income − (Needs + Wants + Savings).</p>
+    <p>50/30/20 Rule: 50% Take-home income to Needs (housing, utilities, transportation), 30% to Wants (fun, dining), 20% to Savings & Debt payoff.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$5,000 monthly income with $2,500 needs, $1,500 wants, $1,000 savings gives $0 net surplus (balanced budget).</p>
+    <p>$5,000 net income with $2,600 needs (52%), $1,100 wants (22%), and $900 savings (18%) leaves $400 unallocated monthly surplus.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency, formatPercent } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const inc = parseFloat(document.getElementById('inc').value || '5000');
-      const needs = parseFloat(document.getElementById('needs').value || '2500');
-      const wants = parseFloat(document.getElementById('wants').value || '1500');
-      const sav = parseFloat(document.getElementById('sav').value || '1000');
-      const exp = needs + wants + sav;
-      const surplus = inc - exp;
-      document.getElementById('hero-result-value').textContent = formatCurrency(surplus);
-      document.getElementById('res-p1').textContent = formatCurrency(exp) + '/mo';
-      document.getElementById('res-p2').textContent = formatCurrency(inc) + '/mo';
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Needs (50%)', 'Wants (30%)', 'Savings (20%)'], [needs, wants, sav]);
-    
+      const netIncome = parseFloat((document.getElementById('income-val') as HTMLInputElement)?.value || '5000');
+
+      const housing = parseFloat((document.getElementById('housing-val') as HTMLInputElement)?.value || '1600');
+      const food = parseFloat((document.getElementById('food-val') as HTMLInputElement)?.value || '600');
+      const trans = parseFloat((document.getElementById('trans-val') as HTMLInputElement)?.value || '400');
+      const wants = parseFloat((document.getElementById('wants-val') as HTMLInputElement)?.value || '1100');
+      const savings = parseFloat((document.getElementById('savings-val') as HTMLInputElement)?.value || '900');
+
+      const totalNeeds = housing + food + trans;
+      const totalExpenses = totalNeeds + wants + savings;
+      const surplus = netIncome - totalExpenses;
+
+      const needsPct = netIncome > 0 ? (totalNeeds / netIncome) * 100 : 0;
+      const wantsPct = netIncome > 0 ? (wants / netIncome) * 100 : 0;
+      const savingsPct = netIncome > 0 ? (savings / netIncome) * 100 : 0;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = surplus >= 0 ? `${formatCurrency(surplus)} surplus` : `${formatCurrency(Math.abs(surplus))} deficit`;
+      (document.getElementById('res-p1') as HTMLElement).textContent = `${formatCurrency(totalNeeds)} (${needsPct.toFixed(0)}%)`;
+      (document.getElementById('res-p2') as HTMLElement).textContent = `${formatCurrency(wants)} (${wantsPct.toFixed(0)}%)`;
+      (document.getElementById('res-p3') as HTMLElement).textContent = `${formatCurrency(savings)} (${savingsPct.toFixed(0)}%)`;
+      (document.getElementById('res-p4') as HTMLElement).textContent = surplus >= 0 ? 'Healthy Cash Flow' : 'Deficit - Reduce Spending';
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Needs (Housing/Food/Trans)', 'Wants (Personal)', 'Savings & Investments', 'Unallocated Surplus'], [totalNeeds, wants, savings, Math.max(0, surplus)]);
+      }
     } catch (err) {
       console.error(err);
     }

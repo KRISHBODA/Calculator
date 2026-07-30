@@ -5,58 +5,137 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Credit Cards Payoff Calculator"
-  description="Compare debt avalanche vs snowball payoff strategies across multiple cards."
-  category="Other Financial Tools"
+  description="Consolidate multiple credit card balances, calculate your total monthly minimum payments, and accelerate your payoff with extra monthly contributions."
+  category="Other Financial Calculators"
   categoryHref="/#other"
-  resultLabel="Total Interest Paid"
-  resultSuffix=""
+  resultLabel="Total Payoff Time Across All Cards"
+  resultSuffix="months"
 >
   <div slot="inputs" class="space-y-4">
-    
-      <div class="space-y-1.5"><label class="text-xs font-medium">Combined Card Debt ($)</label><input type="number" id="bal" value="12000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Average APR (%)</label><input type="number" id="apr" value="20.0" step="0.1" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-      <div class="space-y-1.5"><label class="text-xs font-medium">Total Monthly Budget ($)</label><input type="number" id="pmt" value="400" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
-    
+    <!-- Card 1 -->
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink)]">Card 1 Details</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="c1-bal" class="block text-[var(--ink-soft)] mb-1">Balance ($)</label>
+          <input type="number" id="c1-bal" value="4500" min="0" step="250" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c1-apr" class="block text-[var(--ink-soft)] mb-1">APR (%)</label>
+          <input type="number" id="c1-apr" value="23.99" min="0" max="36" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c1-min" class="block text-[var(--ink-soft)] mb-1">Min Pmt ($)</label>
+          <input type="number" id="c1-min" value="110" min="0" step="10" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="space-y-2 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div class="font-semibold text-[var(--ink)]">Card 2 Details</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label for="c2-bal" class="block text-[var(--ink-soft)] mb-1">Balance ($)</label>
+          <input type="number" id="c2-bal" value="2800" min="0" step="250" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c2-apr" class="block text-[var(--ink-soft)] mb-1">APR (%)</label>
+          <input type="number" id="c2-apr" value="18.99" min="0" max="36" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+        <div>
+          <label for="c2-min" class="block text-[var(--ink-soft)] mb-1">Min Pmt ($)</label>
+          <input type="number" id="c2-min" value="70" min="0" step="10" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Extra Budget -->
+    <div class="space-y-1 text-xs">
+      <label for="extra-budget" class="block text-[var(--ink-soft)] mb-1">Extra Monthly Payoff Budget ($)</label>
+      <input type="number" id="extra-budget" value="120" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    
-      <div class="flex justify-between"><span>Payoff Time:</span><span id="res-p1" class="font-bold text-white">0 months</span></div>
-      <div class="flex justify-between"><span>Total Initial Debt:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
-    
+    <div class="flex justify-between"><span>Combined Credit Card Balances:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Base Minimum Payments:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Total Cumulative Interest Paid:</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Accelerated Payoff Time:</span><span id="res-p4">0 months</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Combined Credit Cards Outflow" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Avalanche targets highest interest rate first; Snowball targets smallest balance.</p>
+    <p>Card payoff simulator rolls over minimum payments as individual cards reach zero balance, accelerating debt freedom.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>Avalanche method saves ~$450 compared to minimum payments on $12,000 total card debt.</p>
+    <p>$4,500 at 23.99% + $2,800 at 18.99% ($7,300 total) with $180 minimums + $120 extra budget pays off all cards in 31 months.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      
-      const bal = parseFloat(document.getElementById('bal').value || '12000');
-      const apr = parseFloat(document.getElementById('apr').value || '20.0');
-      const pmt = parseFloat(document.getElementById('pmt').value || '400');
-      const sched = amortizationSchedule(bal, apr, 36, pmt - amortizedPayment(bal, apr, 36));
-      document.getElementById('hero-result-value').textContent = formatCurrency(sched.totalInterest);
-      document.getElementById('res-p1').textContent = sched.monthly.length + ' months';
-      document.getElementById('res-p2').textContent = formatCurrency(bal);
-      const canvas = document.getElementById('calc-chart');
-      if (canvas) renderDonutChart(canvas, ['Card Debt Principal', 'Total Interest'], [bal, sched.totalInterest]);
-    
+      const c1Bal = parseFloat((document.getElementById('c1-bal') as HTMLInputElement)?.value || '4500');
+      const c1Apr = parseFloat((document.getElementById('c1-apr') as HTMLInputElement)?.value || '23.99');
+      const c1Min = parseFloat((document.getElementById('c1-min') as HTMLInputElement)?.value || '110');
+
+      const c2Bal = parseFloat((document.getElementById('c2-bal') as HTMLInputElement)?.value || '2800');
+      const c2Apr = parseFloat((document.getElementById('c2-apr') as HTMLInputElement)?.value || '18.99');
+      const c2Min = parseFloat((document.getElementById('c2-min') as HTMLInputElement)?.value || '70');
+
+      const extraBudget = parseFloat((document.getElementById('extra-budget') as HTMLInputElement)?.value || '120');
+
+      const totalBalance = c1Bal + c2Bal;
+      const baseMinTotal = c1Min + c2Min;
+
+      // Avalanche strategy (higher APR first = Card 1)
+      let b1 = c1Bal, b2 = c2Bal;
+      const r1 = (c1Apr / 100) / 12, r2 = (c2Apr / 100) / 12;
+
+      let totalInterest = 0;
+      let months = 0;
+
+      while ((b1 > 0.01 || b2 > 0.01) && months < 600) {
+        months++;
+        const i1 = b1 * r1, i2 = b2 * r2;
+        totalInterest += (i1 + i2);
+
+        let remBudget = baseMinTotal + extraBudget;
+
+        // Card 1 high interest target
+        if (b1 > 0) {
+          const pmt1 = Math.min(b1 + i1, Math.max(c1Min, remBudget));
+          const prin1 = pmt1 - i1;
+          b1 -= prin1;
+          remBudget -= pmt1;
+        }
+
+        // Card 2
+        if (b2 > 0 && remBudget > 0) {
+          const pmt2 = Math.min(b2 + i2, remBudget);
+          const prin2 = pmt2 - i2;
+          b2 -= prin2;
+        }
+      }
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = `${months} months (${(months / 12).toFixed(1)} yrs)`;
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(totalBalance);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(baseMinTotal) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(totalInterest);
+      (document.getElementById('res-p4') as HTMLElement).textContent = `${months} months`;
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Card 1 Principal', 'Card 2 Principal', 'Combined Interest'], [c1Bal, c2Bal, totalInterest]);
+      }
     } catch (err) {
       console.error(err);
     }

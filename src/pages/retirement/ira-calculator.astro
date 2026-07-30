@@ -4,42 +4,114 @@ import ResultChart from '../../components/ResultChart.astro';
 ---
 
 <CalculatorShell
-  title="IRA Calculator"
-  description="Compare Traditional vs Roth IRA."
+  title="Traditional IRA Calculator"
+  description="Calculate Traditional IRA pre-tax compound growth, immediate annual tax savings, and post-tax retirement distribution value."
   category="Retirement Planning"
   categoryHref="/#retirement"
-  resultLabel="Traditional IRA Balance"
-  resultSuffix=""
+  resultLabel="Pre-Tax Traditional IRA Balance"
+  resultSuffix="total"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Contribution ($)</label><input type="number" id="pmt" value="500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="current-age" class="block text-[var(--ink-soft)] mb-1">Current Age</label>
+        <input type="number" id="current-age" value="35" min="18" max="75" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="retire-age" class="block text-[var(--ink-soft)] mb-1">Retirement Age</label>
+        <input type="number" id="retire-age" value="65" min="40" max="85" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="balance-val" class="block text-[var(--ink-soft)] mb-1">Current IRA Balance ($)</label>
+        <input type="number" id="balance-val" value="20000" min="0" step="1000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="contrib-val" class="block text-[var(--ink-soft)] mb-1">Annual Contribution ($)</label>
+        <input type="number" id="contrib-val" value="7000" min="0" max="8000" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-xs">
+      <div>
+        <label for="return-rate" class="block text-[var(--ink-soft)] mb-1">Return Rate (%)</label>
+        <input type="number" id="return-rate" value="6.5" min="0" max="20" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="cur-tax" class="block text-[var(--ink-soft)] mb-1">Current Tax (%)</label>
+        <input type="number" id="cur-tax" value="24" min="0" max="50" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="ret-tax" class="block text-[var(--ink-soft)] mb-1">Retire Tax (%)</label>
+        <input type="number" id="ret-tax" value="15" min="0" max="50" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Total Contributions:</span><span id="res-p1" class="font-bold text-white">$150,000.00</span></div><div class="flex justify-between"><span>Tax-Deferred Growth:</span><span id="res-p2" class="font-bold text-emerald-200">$255,000.00</span></div>
+    <div class="flex justify-between"><span>Pre-Tax IRA Nest Egg:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Estimated Post-Tax Net Value:</span><span id="res-p2" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between"><span>Immediate Annual Tax Savings:</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Total Pre-Tax Growth:</span><span id="res-p4">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Traditional IRA Capital & Growth" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Pre-tax IRA accumulation.</p>
+    <p>Traditional IRA contributions provide immediate upfront tax deductions. Withdrawals in retirement are taxed at your future marginal income tax rate.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$500/mo at 7% over 25 years = ~$405,000.</p>
+    <p>Age 35 with $20k balance + $7,000/yr deductible contribution saves $1,680/yr in current taxes (24% rate) and grows to $731,908 pre-tax ($622,122 post-tax at 15% rate).</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const fv = futureValueSeries(500, 7.0, 25, 12); (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(fv); (document.getElementById('res-p1') as HTMLElement).textContent = '$150,000.00'; (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fv - 150000); const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Contributions', 'Tax-Deferred Interest'], [150000, fv - 150000]);
+      const curAge = parseInt((document.getElementById('current-age') as HTMLInputElement)?.value || '35');
+      const retAge = parseInt((document.getElementById('retire-age') as HTMLInputElement)?.value || '65');
+
+      const startBalance = parseFloat((document.getElementById('balance-val') as HTMLInputElement)?.value || '20000');
+      const annualContrib = parseFloat((document.getElementById('contrib-val') as HTMLInputElement)?.value || '7000');
+
+      const returnRate = parseFloat((document.getElementById('return-rate') as HTMLInputElement)?.value || '6.5') / 100;
+      const curTax = parseFloat((document.getElementById('cur-tax') as HTMLInputElement)?.value || '24') / 100;
+      const retTax = parseFloat((document.getElementById('ret-tax') as HTMLInputElement)?.value || '15') / 100;
+
+      const totalYears = Math.max(1, retAge - curAge);
+      const rMo = returnRate / 12;
+      const moContrib = annualContrib / 12;
+
+      let iraBalance = startBalance;
+      let totalContribs = 0;
+
+      for (let m = 0; m < totalYears * 12; m++) {
+        iraBalance = (iraBalance + moContrib) * (1 + rMo);
+        totalContribs += moContrib;
+      }
+
+      const totalGrowth = Math.max(0, iraBalance - startBalance - totalContribs);
+      const postTaxNetValue = iraBalance * (1 - retTax);
+      const annualTaxSavings = annualContrib * curTax;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(iraBalance);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(iraBalance);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(postTaxNetValue);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(annualTaxSavings) + '/yr';
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(totalGrowth);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Starting Balance', 'Total Contributions', 'Pre-Tax Growth'], [startBalance, totalContribs, totalGrowth]);
+      }
     } catch (err) {
       console.error(err);
     }

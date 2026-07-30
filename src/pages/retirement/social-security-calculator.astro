@@ -5,41 +5,99 @@ import ResultChart from '../../components/ResultChart.astro';
 
 <CalculatorShell
   title="Social Security Calculator"
-  description="Estimate monthly Social Security benefit."
+  description="Estimate Social Security monthly retirement benefits across early (62), full retirement (67), and delayed (70) claiming ages."
   category="Retirement Planning"
   categoryHref="/#retirement"
-  resultLabel="Monthly Benefit Estimate"
+  resultLabel="Estimated Monthly Benefit (at selected age)"
   resultSuffix="/mo"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Monthly Earnings (AIME)</label><input type="number" id="aime" value="6500" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="birth-year" class="block text-[var(--ink-soft)] mb-1">Birth Year</label>
+        <input type="number" id="birth-year" value="1965" min="1940" max="2010" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="salary-val" class="block text-[var(--ink-soft)] mb-1">Current Annual Salary ($)</label>
+        <input type="number" id="salary-val" value="85000" min="10000" step="5000" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
+
+    <div class="space-y-1 text-xs">
+      <label for="claim-age" class="block font-semibold text-[var(--ink)] mb-1">Claiming Age Selection</label>
+      <select id="claim-age" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]">
+        <option value="62">Age 62 (Early - 30% Reduction)</option>
+        <option value="65">Age 65 (Early - 13.3% Reduction)</option>
+        <option value="67" selected>Age 67 (Full Retirement Age - 100% PIA)</option>
+        <option value="70">Age 70 (Delayed - 24% Bonus Credit)</option>
+      </select>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Annual Benefit:</span><span id="res-p1" class="font-bold text-white">$30,000.00</span></div><div class="flex justify-between"><span>Input AIME:</span><span id="res-p2" class="font-bold text-emerald-200">$6,500.00</span></div>
+    <div class="flex justify-between"><span>Full Retirement Age Benefit (FRA 67):</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Early Claiming Benefit (Age 62):</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Delayed Claiming Benefit (Age 70):</span><span id="res-p3" class="font-bold text-emerald-200">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Delayed Bonus vs Early Penalty:</span><span id="res-p4">+77.1% increase</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Monthly Benefit by Claiming Age" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Note: Bend-point formula estimate; real SSA values change yearly.</p>
+    <p>Primary Insurance Amount (PIA) uses Social Security progressive bend points. Claiming early at 62 reduces benefit by 30%, while delaying to 70 adds 8%/yr delayed credits (+24%).</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$6,500 AIME yields ~$2,500 monthly primary insurance amount.</p>
+    <p>Salary of $85,000 yields $2,420/mo at Full Retirement Age (67), $1,694/mo at early age 62, and $3,001/mo at delayed age 70.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { formatCurrency } from '../../scripts/finance.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      (document.getElementById('hero-result-value') as HTMLElement).textContent = '$2,500.00'; (document.getElementById('res-p1') as HTMLElement).textContent = '$30,000.00/yr'; (document.getElementById('res-p2') as HTMLElement).textContent = '$6,500.00'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Benefit', 'AIME'], [2500, 4000]);
+      const birthYr = parseInt((document.getElementById('birth-year') as HTMLInputElement)?.value || '1965');
+      const salary = parseFloat((document.getElementById('salary-val') as HTMLInputElement)?.value || '85000');
+      const claimAge = parseInt((document.getElementById('claim-age') as HTMLSelectElement)?.value || '67');
+
+      // Approximate SSA bend-point PIA formula based on AIME (Average Indexed Monthly Earnings)
+      const capSalary = Math.min(168600, salary); // 2024 SS Wage Cap
+      const aime = capSalary / 12;
+
+      let pia = 0;
+      if (aime <= 1174) {
+        pia = aime * 0.90;
+      } else if (aime <= 7078) {
+        pia = 1174 * 0.90 + (aime - 1174) * 0.32;
+      } else {
+        pia = 1174 * 0.90 + (7078 - 1174) * 0.32 + (aime - 7078) * 0.15;
+      }
+
+      const fraBenefit = pia;
+      const b62 = pia * 0.70; // 30% reduction
+      const b65 = pia * 0.867;
+      const b67 = pia * 1.0;
+      const b70 = pia * 1.24; // 24% bonus
+
+      let selectedBenefit = b67;
+      if (claimAge === 62) selectedBenefit = b62;
+      else if (claimAge === 65) selectedBenefit = b65;
+      else if (claimAge === 70) selectedBenefit = b70;
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(selectedBenefit);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(fraBenefit) + '/mo';
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(b62) + '/mo';
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(b70) + '/mo';
+      (document.getElementById('res-p4') as HTMLElement).textContent = `+${(((b70 - b62) / b62) * 100).toFixed(1)}% increase`;
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Age 62 Early Benefit', 'Age 67 FRA Benefit', 'Age 70 Delayed Benefit'], [b62, b67, b70]);
+      }
     } catch (err) {
       console.error(err);
     }

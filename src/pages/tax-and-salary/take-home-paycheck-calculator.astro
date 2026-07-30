@@ -4,42 +4,111 @@ import ResultChart from '../../components/ResultChart.astro';
 ---
 
 <CalculatorShell
-  title="Take-Home-Paycheck Calculator"
-  description="Calculate net pay after tax and FICA."
+  title="Take-Home Paycheck Calculator"
+  description="Calculate your net take-home paycheck amount per pay period after federal withholding tax, FICA Social Security, Medicare, state tax, and pre-tax deductions."
   category="Tax & Salary"
   categoryHref="/#tax-and-salary"
-  resultLabel="Estimated Net Paycheck"
-  resultSuffix="/mo"
+  resultLabel="Net Take-Home Paycheck"
+  resultSuffix="per paycheck"
 >
   <div slot="inputs" class="space-y-4">
-    <div class="space-y-1.5"><label class="text-xs font-medium">Gross Monthly Pay ($)</label><input type="number" id="gross" value="6000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs" /></div>
+    <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
+      <label for="gross-val" class="block text-xs font-semibold text-[var(--ink)]">1. Gross Annual Salary ($)</label>
+      <input type="number" id="gross-val" value="75000" min="5000" step="5000" class="w-full p-2 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-xs text-[var(--ink)]" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
+      <div>
+        <label for="freq-select" class="block text-[var(--ink-soft)] mb-1">Pay Frequency</label>
+        <select id="freq-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="26" selected>Bi-weekly (26/yr)</option>
+          <option value="24">Semi-monthly (24/yr)</option>
+          <option value="12">Monthly (12/yr)</option>
+          <option value="52">Weekly (52/yr)</option>
+        </select>
+      </div>
+      <div>
+        <label for="status-select" class="block text-[var(--ink-soft)] mb-1">Filing Status</label>
+        <select id="status-select" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-xs">
+          <option value="single" selected>Single</option>
+          <option value="married">Married Filing Jointly</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-xs">
+      <div>
+        <label for="state-rate" class="block text-[var(--ink-soft)] mb-1">State Tax Rate (%)</label>
+        <input type="number" id="state-rate" value="5.0" min="0" max="15" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+      </div>
+      <div>
+        <label for="pretax-val" class="block text-[var(--ink-soft)] mb-1">Pre-Tax Deductions ($/paycheck)</label>
+        <input type="number" id="pretax-val" value="150" min="0" step="25" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+      </div>
+    </div>
   </div>
 
   <div slot="result-breakdown" class="space-y-2">
-    <div class="flex justify-between"><span>Total Deductions:</span><span id="res-p1" class="font-bold text-white">$1,350.00</span></div><div class="flex justify-between"><span>FICA Deductions:</span><span id="res-p2" class="font-bold text-emerald-200">$459.00</span></div>
+    <div class="flex justify-between"><span>Gross Pay per Paycheck:</span><span id="res-p1" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>Federal Withholding Tax:</span><span id="res-p2" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>FICA Taxes (SS 6.2% + Med 1.45%):</span><span id="res-p3" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between"><span>State Income Tax Withholding:</span><span id="res-p4" class="font-bold text-white">$0.00</span></div>
+    <div class="flex justify-between pt-1 border-t border-emerald-800/60 font-bold text-white"><span>Net Take-Home Paycheck:</span><span id="res-p5" class="text-emerald-200">$0.00</span></div>
   </div>
 
   <div slot="chart">
-    <ResultChart id="calc-chart" type="donut" title="Breakdown" />
+    <ResultChart id="calc-chart" type="donut" title="Paycheck Stub Deductions Breakdown" />
   </div>
 
   <div slot="formula-explanation" class="space-y-2">
-    <p>Net = Gross − Federal Tax − FICA (7.65%) − State Tax.</p>
+    <p>Net Paycheck = Gross Paycheck − Pre-Tax Deductions − Federal Tax Withholding − FICA Taxes − State Tax.</p>
   </div>
 
   <div slot="worked-example" class="space-y-2 text-xs">
-    <p>$6,000 monthly gross pay yields ~$4,650 net take-home pay.</p>
+    <p>$75,000 salary bi-weekly ($2,884.62 gross per paycheck) with single status, $150 pre-tax deduction, and 5% state tax yields ~$2,096 net take-home paycheck.</p>
   </div>
 </CalculatorShell>
 
 <script>
-  import { amortizedPayment, amortizationSchedule, futureValueLumpSum, futureValueSeries, investmentGrowth, presentValue, solveRate, irr, applyProgressiveTax, formatCurrency, formatPercent, formatNumber } from '../../scripts/finance.js';
-  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024, FICA_RATES, IRS_UNIFORM_LIFETIME_TABLE } from '../../scripts/taxData.js';
-  import { renderDonutChart, renderLineChart } from '../../scripts/charts.js';
+  import { applyProgressiveTax, formatCurrency } from '../../scripts/finance.js';
+  import { TAX_BRACKETS_2024, STANDARD_DEDUCTION_2024 } from '../../scripts/taxData.js';
+  import { renderDonutChart } from '../../scripts/charts.js';
 
   function update() {
     try {
-      const gross = 6000; const fed = 650; const fica = gross * 0.0765; const state = gross * 0.05; const net = gross - fed - fica - state; (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(net); (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(fed + fica + state) + '/mo'; (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fica) + '/mo'; const canvas = document.getElementById('calc-chart') as HTMLCanvasElement; if (canvas) renderDonutChart(canvas, ['Net Pay', 'Deductions'], [net, fed + fica + state]);
+      const grossAnnual = parseFloat((document.getElementById('gross-val') as HTMLInputElement)?.value || '75000');
+      const payFreqPeriods = parseInt((document.getElementById('freq-select') as HTMLSelectElement)?.value || '26');
+      const status = (document.getElementById('status-select') as HTMLSelectElement)?.value || 'single';
+      const stateRate = parseFloat((document.getElementById('state-rate') as HTMLInputElement)?.value || '5.0');
+      const pretaxPerPaycheck = parseFloat((document.getElementById('pretax-val') as HTMLInputElement)?.value || '150');
+
+      const grossPerPaycheck = grossAnnual / payFreqPeriods;
+      const annualPretax = pretaxPerPaycheck * payFreqPeriods;
+
+      const stdDeduction = (STANDARD_DEDUCTION_2024 as any)[status] || 14600;
+      const brackets = (TAX_BRACKETS_2024 as any)[status] || TAX_BRACKETS_2024.single;
+
+      const taxableAnnual = Math.max(0, grossAnnual - annualPretax - stdDeduction);
+      const fedAnnualTax = applyProgressiveTax(taxableAnnual, brackets).totalTax;
+      const fedTaxPerPaycheck = fedAnnualTax / payFreqPeriods;
+
+      const ficaPerPaycheck = grossPerPaycheck * 0.0765;
+      const stateTaxPerPaycheck = Math.max(0, grossPerPaycheck - pretaxPerPaycheck) * (stateRate / 100);
+
+      const totalDeductionsPerPaycheck = pretaxPerPaycheck + fedTaxPerPaycheck + ficaPerPaycheck + stateTaxPerPaycheck;
+      const netPaycheck = Math.max(0, grossPerPaycheck - totalDeductionsPerPaycheck);
+
+      (document.getElementById('hero-result-value') as HTMLElement).textContent = formatCurrency(netPaycheck);
+      (document.getElementById('res-p1') as HTMLElement).textContent = formatCurrency(grossPerPaycheck);
+      (document.getElementById('res-p2') as HTMLElement).textContent = formatCurrency(fedTaxPerPaycheck);
+      (document.getElementById('res-p3') as HTMLElement).textContent = formatCurrency(ficaPerPaycheck);
+      (document.getElementById('res-p4') as HTMLElement).textContent = formatCurrency(stateTaxPerPaycheck);
+      (document.getElementById('res-p5') as HTMLElement).textContent = formatCurrency(netPaycheck);
+
+      const canvas = document.getElementById('calc-chart') as HTMLCanvasElement;
+      if (canvas) {
+        renderDonutChart(canvas, ['Net Take-Home Paycheck', 'Federal Withholding Tax', 'FICA Taxes', 'State Tax', 'Pre-Tax Deductions'], [netPaycheck, fedTaxPerPaycheck, ficaPerPaycheck, stateTaxPerPaycheck, pretaxPerPaycheck]);
+      }
     } catch (err) {
       console.error(err);
     }
