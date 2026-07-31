@@ -15,9 +15,9 @@ import ResultChart from '../../components/ResultChart.astro';
     <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="price-num" class="text-[var(--ink)]">Vehicle Purchase Price ($)</label>
-        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="price-num" value="30000" min="1000" max="200000" step="1000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="price-num" value="30000" min="1000"  step="1000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
       </div>
-      <input type="range" id="price-slider" value="30000" min="5000" max="100000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
@@ -34,7 +34,7 @@ import ResultChart from '../../components/ResultChart.astro';
       </div>
       <div>
         <label for="rate-num" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
-        <input type="number" id="rate-num" value="6.5" min="0.0" max="25.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="rate-num" value="6.5" min="0.0"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
 
@@ -61,7 +61,7 @@ import ResultChart from '../../components/ResultChart.astro';
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label for="tax-rate" class="block text-[var(--ink-soft)] mb-1">Sales Tax (%)</label>
-          <input type="number" id="tax-rate" value="7.0" min="0" max="15" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+          <input type="number" id="tax-rate" value="7.0" min="0"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
         </div>
         <div>
           <label for="fees-num" class="block text-[var(--ink-soft)] mb-1">Title & Fees ($)</label>
@@ -113,7 +113,7 @@ import ResultChart from '../../components/ResultChart.astro';
       const fees = parseFloat((document.getElementById('fees-num') as HTMLInputElement)?.value || '350');
       const rollFees = (document.getElementById('roll-fees') as HTMLInputElement)?.checked;
 
-      (document.getElementById('price-slider') as HTMLInputElement).value = String(price);
+      
 
       const netTrade = tradeVal - tradeOwed;
       const taxableAmount = Math.max(0, price - netTrade);

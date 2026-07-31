@@ -18,9 +18,9 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
     <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="home-price-num" class="text-[var(--ink)]">1. Home Purchase Price</label>
-        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="home-price-num" value="350000" min="10000" max="5000000" step="5000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="home-price-num" value="350000" min="10000"  step="5000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
       </div>
-      <input type="range" id="home-price-slider" value="350000" min="10000" max="2000000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <!-- 2. Down Payment ($ and %) -->
@@ -28,11 +28,11 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="down-payment-num" class="text-[var(--ink)]">2. Down Payment ($ / %)</label>
         <div class="flex items-center space-x-2 font-mono text-[var(--ink-soft)]">
-          <span>$<input type="number" id="down-payment-num" value="70000" min="0" max="5000000" step="1000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
-          <span class="text-[10px] text-[var(--ink-soft)]">(<input type="number" id="down-payment-pct-input" value="20" min="0" max="100" step="0.5" class="w-12 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" />%)</span>
+          <span>$<input type="number" id="down-payment-num" value="70000" min="0"  step="1000" class="w-24 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+          <span class="text-[10px] text-[var(--ink-soft)]">(<input type="number" id="down-payment-pct-input" value="20" min="0"  step="0.5" class="w-12 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" />%)</span>
         </div>
       </div>
-      <input type="range" id="down-payment-slider" value="70000" min="0" max="500000" step="1000" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <!-- 3. Loan Term -->
@@ -52,9 +52,9 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
     <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="interest-rate-num" class="text-[var(--ink)]">4. Interest Rate (%)</label>
-        <span class="font-mono text-[var(--ink-soft)]"><input type="number" id="interest-rate-num" value="6.5" min="0.1" max="20.0" step="0.1" class="w-16 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /> %</span>
+        <span class="font-mono text-[var(--ink-soft)]"><input type="number" id="interest-rate-num" value="6.5" min="0.1"  step="0.1" class="w-16 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /> %</span>
       </div>
-      <input type="range" id="interest-rate-slider" value="6.5" min="0.1" max="15.0" step="0.1" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <!-- 5 & 6. Taxes & Insurance -->
@@ -73,7 +73,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
         </div>
         <div>
           <label for="pmi-num" class="block text-[var(--ink-soft)] mb-1">7. PMI Rate (%)</label>
-          <input type="number" id="pmi-num" value="0.5" min="0" max="3" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)] focus:outline-none focus:border-[var(--green)]" />
+          <input type="number" id="pmi-num" value="0.5" min="0"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)] focus:outline-none focus:border-[var(--green)]" />
           <span class="text-[10px] text-[var(--ink-soft)] block text-right mt-0.5">Applies if Down &lt; 20%</span>
         </div>
         <div>
@@ -101,7 +101,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
           <option value="11">Nov</option>
           <option value="12">Dec</option>
         </select>
-        <input type="number" id="start-year-num" value="2026" min="2020" max="2050" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="start-year-num" value="2026" min="2020"  class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
 
@@ -139,7 +139,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
     <div class="space-y-1.5">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="comp-rate-num" class="text-[var(--ink)]">Scenario B Interest Rate (%)</label>
-        <input type="number" id="comp-rate-num" value="5.5" min="0.1" max="15.0" step="0.1" class="w-20 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 text-xs font-mono" />
+        <input type="number" id="comp-rate-num" value="5.5" min="0.1"  step="0.1" class="w-20 text-right bg-[var(--paper)] border border-[var(--rule)] rounded p-1 text-xs font-mono" />
       </div>
     </div>
   </div>
@@ -234,9 +234,9 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
     const extraOneTime = parseFloat((document.getElementById('extra-onetime') as HTMLInputElement)?.value || '0');
 
     // Sync sliders
-    (document.getElementById('home-price-slider') as HTMLInputElement).value = String(homePrice);
-    (document.getElementById('down-payment-slider') as HTMLInputElement).value = String(downPayment);
-    (document.getElementById('interest-rate-slider') as HTMLInputElement).value = String(rate);
+    
+    
+    
 
     // Calculations
     const principal = Math.max(0, homePrice - downPayment);

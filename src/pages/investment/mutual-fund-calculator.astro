@@ -24,22 +24,22 @@ import ResultChart from '../../components/ResultChart.astro';
       </div>
       <div>
         <label for="horizon-val" class="block text-[var(--ink-soft)] mb-1">Horizon (Years)</label>
-        <input type="number" id="horizon-val" value="20" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="horizon-val" value="20" min="1"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
 
     <div class="grid grid-cols-3 gap-2 text-xs">
       <div>
         <label for="return-val" class="block text-[var(--ink-soft)] mb-1">Gross Return (%)</label>
-        <input type="number" id="return-val" value="8.0" min="0" max="30" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="return-val" value="8.0" min="0"  step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="expense-val" class="block text-[var(--ink-soft)] mb-1">Expense Ratio (%)</label>
-        <input type="number" id="expense-val" value="0.65" min="0" max="5" step="0.05" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="expense-val" value="0.65" min="0"  step="0.05" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="load-val" class="block text-[var(--ink-soft)] mb-1">Front Load Fee (%)</label>
-        <input type="number" id="load-val" value="0.0" min="0" max="10" step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="load-val" value="0.0" min="0"  step="0.5" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
   </div>

@@ -15,19 +15,19 @@ import ResultChart from '../../components/ResultChart.astro';
     <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="initial-num" class="text-[var(--ink)]">Initial Balance ($)</label>
-        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="initial-num" value="5000" min="0" max="500000" step="500" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="initial-num" value="5000" min="0"  step="500" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
       </div>
-      <input type="range" id="initial-slider" value="5000" min="0" max="50000" step="500" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
       <div>
         <label for="rate-num" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
-        <input type="number" id="rate-num" value="5.0" min="0.1" max="25" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="rate-num" value="5.0" min="0.1"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="years-num" class="block text-[var(--ink-soft)] mb-1">Years to Grow</label>
-        <input type="number" id="years-num" value="5" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="years-num" value="5" min="1"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
 
@@ -81,7 +81,7 @@ import ResultChart from '../../components/ResultChart.astro';
       const contrib = parseFloat((document.getElementById('contrib-num') as HTMLInputElement)?.value || '100');
       const compoundN = parseInt((document.getElementById('compound-select') as HTMLSelectElement)?.value || '12');
 
-      (document.getElementById('initial-slider') as HTMLInputElement).value = String(p);
+      
 
       const rDecimal = rate / 100;
       const totalContribs = contrib * 12 * yrs;

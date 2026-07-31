@@ -20,18 +20,18 @@ import ResultChart from '../../components/ResultChart.astro';
     <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
       <div>
         <label for="rate-val" class="block text-[var(--ink-soft)] mb-1">Interest Rate (%)</label>
-        <input type="number" id="rate-val" value="8.5" min="0.1" max="25" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="rate-val" value="8.5" min="0.1"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="term-yrs" class="block text-[var(--ink-soft)] mb-1">Loan Term (Years)</label>
-        <input type="number" id="term-yrs" value="7" min="1" max="25" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="term-yrs" value="7" min="1"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
 
     <div class="grid grid-cols-2 gap-3 text-xs">
       <div>
         <label for="fee-pct" class="block text-[var(--ink-soft)] mb-1">Origination / SBA Fee (%)</label>
-        <input type="number" id="fee-pct" value="2.5" min="0" max="10" step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="fee-pct" value="2.5" min="0"  step="0.5" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="revenue-val" class="block text-[var(--ink-soft)] mb-1">Annual Revenue ($)</label>

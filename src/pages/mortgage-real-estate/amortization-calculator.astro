@@ -17,15 +17,15 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
     <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="p-num" class="text-[var(--ink)]">Loan Principal Amount ($)</label>
-        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="p-num" value="200000" min="5000" max="5000000" step="5000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="p-num" value="200000" min="5000"  step="5000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
       </div>
-      <input type="range" id="p-slider" value="200000" min="10000" max="1000000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
       <div>
         <label for="r-num" class="block text-[var(--ink-soft)] mb-1">Annual Interest Rate (%)</label>
-        <input type="number" id="r-num" value="6.0" min="0.1" max="25.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="r-num" value="6.0" min="0.1"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="yrs-select" class="block text-[var(--ink-soft)] mb-1">Loan Term</label>
@@ -57,7 +57,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
           <option value="11">Nov</option>
           <option value="12">Dec</option>
         </select>
-        <input type="number" id="start-year" value="2026" min="1990" max="2050" class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-right" />
+        <input type="number" id="start-year" value="2026" min="1990"  class="p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-[var(--ink)] font-mono text-right" />
       </div>
     </div>
 
@@ -155,7 +155,7 @@ import ScheduleTable from '../../components/ScheduleTable.astro';
       const extraYr = parseFloat((document.getElementById('extra-yr') as HTMLInputElement)?.value || '0');
       const extraOnce = parseFloat((document.getElementById('extra-once') as HTMLInputElement)?.value || '0');
 
-      (document.getElementById('p-slider') as HTMLInputElement).value = String(p);
+      
 
       const rateMonthly = (r / 100) / 12;
       const totalMonths = yrs * 12;

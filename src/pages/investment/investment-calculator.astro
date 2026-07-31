@@ -15,19 +15,19 @@ import ResultChart from '../../components/ResultChart.astro';
     <div class="space-y-1.5 border-b border-[var(--rule-light)] pb-3">
       <div class="flex justify-between items-center text-xs font-medium">
         <label for="start-num" class="text-[var(--ink)]">Starting Principal ($)</label>
-        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="start-num" value="25000" min="0" max="2000000" step="5000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
+        <span class="font-mono text-[var(--ink-soft)]">$<input type="number" id="start-num" value="25000" min="0"  step="5000" class="w-28 text-right bg-transparent border-b border-[var(--rule)] focus:border-[var(--green)] focus:outline-none font-mono" /></span>
       </div>
-      <input type="range" id="start-slider" value="25000" min="0" max="200000" step="5000" class="w-full accent-[var(--green)] cursor-pointer" />
+      
     </div>
 
     <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
       <div>
         <label for="rate-num" class="block text-[var(--ink-soft)] mb-1">Return Rate (%)</label>
-        <input type="number" id="rate-num" value="7.5" min="0.0" max="30.0" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="rate-num" value="7.5" min="0.0"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="years-num" class="block text-[var(--ink-soft)] mb-1">Time Horizon (Yrs)</label>
-        <input type="number" id="years-num" value="20" min="1" max="50" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="years-num" value="20" min="1"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
 
@@ -78,7 +78,7 @@ import ResultChart from '../../components/ResultChart.astro';
       const deposit = parseFloat((document.getElementById('deposit-num') as HTMLInputElement)?.value || '500');
       const freq = (document.getElementById('deposit-freq') as HTMLSelectElement)?.value || 'monthly';
 
-      (document.getElementById('start-slider') as HTMLInputElement).value = String(start);
+      
 
       const rDecimal = rate / 100;
       const n = freq === 'monthly' ? 12 : 1;

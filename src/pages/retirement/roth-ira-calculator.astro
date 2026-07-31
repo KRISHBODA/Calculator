@@ -15,11 +15,11 @@ import ResultChart from '../../components/ResultChart.astro';
     <div class="grid grid-cols-2 gap-3 border-b border-[var(--rule-light)] pb-3 text-xs">
       <div>
         <label for="current-age" class="block text-[var(--ink-soft)] mb-1">Current Age</label>
-        <input type="number" id="current-age" value="30" min="18" max="75" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+        <input type="number" id="current-age" value="30" min="18"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="retire-age" class="block text-[var(--ink-soft)] mb-1">Retirement Age</label>
-        <input type="number" id="retire-age" value="65" min="40" max="85" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+        <input type="number" id="retire-age" value="65" min="40"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
       </div>
     </div>
 
@@ -30,22 +30,22 @@ import ResultChart from '../../components/ResultChart.astro';
       </div>
       <div>
         <label for="contrib-val" class="block text-[var(--ink-soft)] mb-1">Annual Contribution ($)</label>
-        <input type="number" id="contrib-val" value="7000" min="0" max="8000" step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
+        <input type="number" id="contrib-val" value="7000" min="0"  step="250" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded font-mono text-[var(--ink)]" />
       </div>
     </div>
 
     <div class="grid grid-cols-3 gap-2 text-xs">
       <div>
         <label for="return-rate" class="block text-[var(--ink-soft)] mb-1">Return Rate (%)</label>
-        <input type="number" id="return-rate" value="7.0" min="0" max="20" step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="return-rate" value="7.0" min="0"  step="0.1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="cur-tax" class="block text-[var(--ink-soft)] mb-1">Current Tax (%)</label>
-        <input type="number" id="cur-tax" value="22" min="0" max="50" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="cur-tax" value="22" min="0"  step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
       <div>
         <label for="ret-tax" class="block text-[var(--ink-soft)] mb-1">Retire Tax (%)</label>
-        <input type="number" id="ret-tax" value="15" min="0" max="50" step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+        <input type="number" id="ret-tax" value="15" min="0"  step="1" class="w-full p-1 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
       </div>
     </div>
   </div>

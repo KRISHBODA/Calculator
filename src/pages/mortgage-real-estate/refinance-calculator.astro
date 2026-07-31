@@ -21,11 +21,11 @@ import ResultChart from '../../components/ResultChart.astro';
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div>
           <label for="cur-rate" class="block text-[var(--ink-soft)] mb-1">Current Rate (%)</label>
-          <input type="number" id="cur-rate" value="7.0" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+          <input type="number" id="cur-rate" value="7.0" min="0.1"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
         </div>
         <div>
           <label for="cur-term" class="block text-[var(--ink-soft)] mb-1">Remaining Term (Yrs)</label>
-          <input type="number" id="cur-term" value="25" min="1" max="30" step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+          <input type="number" id="cur-term" value="25" min="1"  step="1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
         </div>
       </div>
     </div>
@@ -35,7 +35,7 @@ import ResultChart from '../../components/ResultChart.astro';
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div>
           <label for="new-rate" class="block text-[var(--ink-soft)] mb-1">New Rate (%)</label>
-          <input type="number" id="new-rate" value="5.5" min="0.1" max="20" step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
+          <input type="number" id="new-rate" value="5.5" min="0.1"  step="0.1" class="w-full p-1.5 bg-[var(--paper)] border border-[var(--rule)] rounded text-right font-mono text-[var(--ink)]" />
         </div>
         <div>
           <label for="new-term" class="block text-[var(--ink-soft)] mb-1">New Term (Yrs)</label>
